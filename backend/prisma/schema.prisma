@@ -1,0 +1,220 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ─── ENUMs ───────────────────────────────────────────────
+
+enum Role {
+  owner
+  employee
+}
+
+enum SaleStatus {
+  completed
+  cancelled
+}
+
+enum PurchaseStatus {
+  received
+  cancelled
+}
+
+enum InvoiceType {
+  sale
+  purchase
+}
+
+enum InvoiceStatus {
+  paid
+  pending
+  cancelled
+}
+
+enum MovementType {
+  in
+  out
+}
+
+// ─── MODELS ──────────────────────────────────────────────
+
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  password  String
+  name      String
+  role      Role     @default(employee)
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+
+  sales     Sale[]
+  purchases Purchase[]
+  employee  Employee?
+}
+
+model Employee {
+  id         String   @id @default(uuid())
+  firstName  String
+  lastName   String
+  jobTitle   String
+  baseSalary Decimal  @db.Decimal(10, 2)
+  hiredAt    DateTime @db.Date
+  createdAt  DateTime @default(now())
+
+  userId String? @unique
+  user   User?   @relation(fields: [userId], references: [id])
+
+  payments SalaryPayment[]
+}
+
+model Category {
+  id        String   @id @default(uuid())
+  name      String   @unique
+  createdAt DateTime @default(now())
+
+  products Product[]
+}
+
+model Supplier {
+  id      String  @id @default(uuid())
+  name    String
+  email   String?
+  phone   String?
+  address String?
+
+  products  Product[]
+  purchases Purchase[]
+}
+
+model Product {
+  id             String   @id @default(uuid())
+  name           String
+  description    String?
+  price          Decimal  @db.Decimal(10, 2)
+  costPrice      Decimal? @db.Decimal(10, 2)
+  stock          Int      @default(0)
+  alertThreshold Int      @default(5)
+  unit           String   @default("pièce")
+  createdAt      DateTime @default(now())
+
+  categoryId String
+  category   Category @relation(fields: [categoryId], references: [id])
+
+  supplierId String?
+  supplier   Supplier? @relation(fields: [supplierId], references: [id])
+
+  saleItems     SaleItem[]
+  purchaseItems PurchaseItem[]
+  movements     StockMovement[]
+}
+
+model StockMovement {
+  id        String       @id @default(uuid())
+  type      MovementType
+  quantity  Int
+  reason    String?
+  sourceId  String?
+  createdAt DateTime     @default(now())
+
+  productId String
+  product   Product @relation(fields: [productId], references: [id])
+}
+
+model Sale {
+  id          String     @id @default(uuid())
+  clientName  String?
+  totalAmount Decimal    @db.Decimal(10, 2)
+  discount    Decimal    @default(0) @db.Decimal(5, 2)
+  finalAmount Decimal    @db.Decimal(10, 2)
+  status      SaleStatus @default(completed)
+  createdAt   DateTime   @default(now())
+
+  soldById String
+  soldBy   User   @relation(fields: [soldById], references: [id])
+
+  items   SaleItem[]
+  invoice Invoice?
+}
+
+model SaleItem {
+  id        String  @id @default(uuid())
+  quantity  Int
+  unitPrice Decimal @db.Decimal(10, 2)
+  discount  Decimal @default(0) @db.Decimal(5, 2)
+
+  saleId String
+  sale   Sale   @relation(fields: [saleId], references: [id], onDelete: Cascade)
+
+  productId String
+  product   Product @relation(fields: [productId], references: [id])
+}
+
+model Purchase {
+  id          String         @id @default(uuid())
+  totalAmount Decimal        @db.Decimal(10, 2)
+  status      PurchaseStatus @default(received)
+  notes       String?
+  createdAt   DateTime       @default(now())
+
+  supplierId String
+  supplier   Supplier @relation(fields: [supplierId], references: [id])
+
+  createdById String
+  createdBy   User   @relation(fields: [createdById], references: [id])
+
+  items   PurchaseItem[]
+  invoice Invoice?
+}
+
+model PurchaseItem {
+  id       String  @id @default(uuid())
+  quantity Int
+  unitCost Decimal @db.Decimal(10, 2)
+
+  purchaseId String
+  purchase   Purchase @relation(fields: [purchaseId], references: [id], onDelete: Cascade)
+
+  productId String
+  product   Product @relation(fields: [productId], references: [id])
+}
+
+model Invoice {
+  id        String        @id @default(uuid())
+  number    String        @unique
+  type      InvoiceType
+  status    InvoiceStatus @default(pending)
+  pdfPath   String?
+  createdAt DateTime      @default(now())
+
+  saleId String? @unique
+  sale   Sale?   @relation(fields: [saleId], references: [id])
+
+  purchaseId String?   @unique
+  purchase   Purchase? @relation(fields: [purchaseId], references: [id])
+}
+
+model SalaryPayment {
+  id     String   @id @default(uuid())
+  amount Decimal  @db.Decimal(10, 2)
+  month  String
+  note   String?
+  paidAt DateTime @default(now())
+
+  employeeId String
+  employee   Employee @relation(fields: [employeeId], references: [id])
+}
+
+model Settings {
+  id        String   @id @default(uuid())
+  shopName  String
+  address   String?
+  phone     String?
+  email     String?
+  siret     String?
+  logoPath  String?
+  updatedAt DateTime @updatedAt
+}
