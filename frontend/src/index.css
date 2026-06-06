@@ -1,1 +1,55 @@
 @import "tailwindcss";
+
+/* ============================================================
+   Design system Nexus — tokens (voir DESIGN.md, git-exclu)
+   Couleurs : neutres teintés vert, accent emerald, zéro bleu.
+   ============================================================ */
+@theme {
+  /* Surfaces & neutres (gris teinté vert, chroma ~0.006 hue ~158) */
+  --color-canvas: #f7faf8; /* fond de page */
+  --color-surface: #ffffff; /* cartes, inputs, modales */
+  --color-ink: #101a15; /* texte principal */
+  --color-ink-soft: #37463f; /* texte secondaire */
+  --color-ink-mute: #677871; /* labels, légendes (AA) */
+  --color-ink-faint: #9aa6a0; /* placeholders, déco */
+  --color-border: #e3e9e5; /* filets 1px */
+  --color-border-strong: #cfd7d2;
+
+  /* Accent — emerald (seule voix colorée forte) */
+  --color-accent: #059669;
+  --color-accent-deep: #047857;
+  --color-accent-darker: #065f46;
+  --color-accent-soft: #d1fae5;
+  --color-accent-softer: #ecfdf5;
+
+  /* Navigation — vert quasi-noir */
+  --color-sidebar: #0a1410;
+  --color-sidebar-soft: #13201a;
+
+  /* Couleurs fonctionnelles */
+  --color-danger: #b91c1c;
+  --color-danger-soft: #fee2e2;
+  --color-warn: #b45309;
+  --color-warn-soft: #fef3c7;
+
+  /* Polices */
+  --font-sans: "Hanken Grotesk", -apple-system, BlinkMacSystemFont, system-ui,
+    sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, monospace;
+}
+
+@layer base {
+  body {
+    font-family: var(--font-sans);
+    background-color: var(--color-canvas);
+    color: var(--color-ink);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* Focus clavier visible (WCAG AA) */
+  :focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
+  }
+}
