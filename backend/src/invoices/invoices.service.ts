@@ -66,4 +66,9 @@ export class InvoicesService {
       data: { status },
     });
   }
+
+  /** Paramètres mono-instance du magasin (en-tête de la facture PDF). */
+  findSettings() {
+    return this.prisma.settings.findFirst();
+  }
 }
