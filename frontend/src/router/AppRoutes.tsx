@@ -5,6 +5,7 @@ import RoleRoute, { homeForRole } from './RoleRoute';
 import AppLayout from '../components/layout/AppLayout';
 import Login from '../pages/auth/Login';
 import Placeholder from '../pages/Placeholder';
+import Stock from '../pages/stock/Stock';
 
 /** Redirige `/` vers l'accueil du rôle (le profil est garanti par PrivateRoute). */
 function RoleHome() {
@@ -38,7 +39,7 @@ export default function AppRoutes() {
 
           {/* Partagé owner + employee */}
           <Route element={<RoleRoute roles={['owner', 'employee']} />}>
-            <Route path="stock" element={<Placeholder />} />
+            <Route path="stock" element={<Stock />} />
             <Route path="ventes" element={<Placeholder />} />
           </Route>
         </Route>
