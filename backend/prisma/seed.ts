@@ -23,7 +23,7 @@ type SeedProduct = {
 async function main() {
   // --- Compte owner ---
   const password = await bcrypt.hash('admin123', 10);
-  await prisma.user.upsert({
+  const owner = await prisma.user.upsert({
     where: { email: 'owner@nexus.fr' },
     update: {},
     create: {
@@ -112,6 +112,8 @@ async function main() {
     { name: 'Gants de gardien Predator', sku: 'GAN-PRED-9', cat: 'Football', sup: adidas.id, price: 34.99, costPrice: 19, stock: 0, alertThreshold: 5, unit: 'paire' },
   ];
 
+  // Index des produits créés (par SKU) pour les achats de démo ci-dessous.
+  const bySku: Record<string, string> = {};
   for (const p of products) {
     const product = await prisma.product.create({
       data: {
@@ -127,6 +129,7 @@ async function main() {
         supplierId: p.sup,
       },
     });
+    bySku[p.sku] = product.id;
     // Mouvement d'entrée pour le stock initial (cohérent avec la logique produits).
     if (p.stock > 0) {
       await prisma.stockMovement.create({
@@ -140,7 +143,60 @@ async function main() {
     }
   }
 
+  // --- Achats fournisseurs de démo ---
+  // Réappro de produits à stock sain (on évite les ruptures/faibles qui illustrent les badges).
+  // Reproduit la logique du service : incrément du stock + mouvement `Achat` + maj costPrice.
+  const round2 = (n: number) => Math.round(n * 100) / 100;
+  type SeedPurchaseItem = { sku: string; quantity: number; unitCost: number };
+  async function seedPurchase(
+    supplierId: string,
+    notes: string,
+    items: SeedPurchaseItem[],
+  ) {
+    const total = items.reduce((s, it) => s + it.unitCost * it.quantity, 0);
+    const purchase = await prisma.purchase.create({
+      data: {
+        supplierId,
+        notes,
+        totalAmount: round2(total),
+        createdById: owner.id,
+        items: {
+          create: items.map((it) => ({
+            productId: bySku[it.sku],
+            quantity: it.quantity,
+            unitCost: it.unitCost,
+          })),
+        },
+      },
+    });
+    for (const it of items) {
+      await prisma.product.update({
+        where: { id: bySku[it.sku] },
+        data: { stock: { increment: it.quantity }, costPrice: it.unitCost },
+      });
+      await prisma.stockMovement.create({
+        data: {
+          productId: bySku[it.sku],
+          type: MovementType.in,
+          quantity: it.quantity,
+          reason: 'Achat',
+          sourceId: purchase.id,
+        },
+      });
+    }
+  }
+
+  await seedPurchase(nike.id, 'Réassort running & football', [
+    { sku: 'RUN-PEG40-42', quantity: 10, unitCost: 68 },
+    { sku: 'CHF-PHGX-42', quantity: 12, unitCost: 50 },
+  ]);
+  await seedPurchase(decathlon.id, 'Réassort textile & accessoires', [
+    { sku: 'SHO-DOM-M', quantity: 50, unitCost: 3.8 },
+    { sku: 'BAL-L1-T5', quantity: 20, unitCost: 13 },
+  ]);
+
   console.log(`Seed terminé : ${products.length} produits de démo (magasin de sport).`);
+  console.log('Achats de démo : 2 réassorts fournisseurs.');
   console.log('Connexion : owner@nexus.fr / admin123');
 }
 
