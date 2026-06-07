@@ -39,6 +39,14 @@ const icons = {
       <circle cx="17" cy="20" r="1.6" />
     </svg>
   ),
+  achats: (
+    <svg {...svgProps}>
+      <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" />
+      <path d="M12 22V12" />
+      <path d="M3.3 7l8.7 5 8.7-5" />
+      <path d="M7.5 4.5l9 5.2" />
+    </svg>
+  ),
   factures: (
     <svg {...svgProps}>
       <path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z" />
@@ -66,6 +74,7 @@ const OWNER_NAV: NavItem[] = [
   { label: 'Tableau de bord', path: '/dashboard', icon: icons.dashboard },
   { label: 'Stock', path: '/stock', icon: icons.stock },
   { label: 'Ventes', path: '/ventes', icon: icons.ventes },
+  { label: 'Achats', path: '/achats', icon: icons.achats },
   { label: 'Factures', path: '/factures', icon: icons.factures },
   { label: 'Employés', path: '/employes', icon: icons.employes },
   { label: 'Paramètres', path: '/parametres', icon: icons.parametres },

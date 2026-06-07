@@ -12,6 +12,7 @@ import SuppliersPage from '../pages/stock/SuppliersPage';
 import VentesLayout from '../pages/sales/VentesLayout';
 import NouvelleVente from '../pages/sales/NouvelleVente';
 import SalesHistory from '../pages/sales/SalesHistory';
+import NouvelAchat from '../pages/purchases/NouvelAchat';
 
 /** Redirige `/` vers l'accueil du rôle (le profil est garanti par PrivateRoute). */
 function RoleHome() {
@@ -33,6 +34,7 @@ export default function AppRoutes() {
           {/* Owner uniquement */}
           <Route element={<RoleRoute roles={['owner']} />}>
             <Route path="dashboard" element={<Placeholder />} />
+            <Route path="achats" element={<NouvelAchat />} />
             <Route path="factures" element={<Placeholder />} />
             <Route path="employes" element={<Placeholder />} />
             <Route path="parametres" element={<Placeholder />} />
