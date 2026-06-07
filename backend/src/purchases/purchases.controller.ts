@@ -37,4 +37,10 @@ export class PurchasesController {
   create(@CurrentUser() user: { id: string }, @Body() dto: CreatePurchaseDto) {
     return this.purchases.create(user.id, dto);
   }
+
+  @Post(':id/cancel')
+  @Roles('owner')
+  cancel(@Param('id') id: string) {
+    return this.purchases.cancel(id);
+  }
 }

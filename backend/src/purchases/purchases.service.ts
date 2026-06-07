@@ -3,7 +3,7 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { MovementType, Prisma } from '@prisma/client';
+import { MovementType, Prisma, PurchaseStatus } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreatePurchaseDto } from './dto/create-purchase.dto';
 
@@ -119,5 +119,53 @@ export class PurchasesService {
     });
     if (!purchase) throw new NotFoundException('Achat introuvable');
     return purchase;
+  }
+
+  /**
+   * Annule un achat (owner) : retire du stock la marchandise reçue + mouvements `out`.
+   * Refuse si la marchandise a déjà été (partiellement) revendue — le stock passerait sous 0.
+   */
+  async cancel(id: string) {
+    const purchase = await this.prisma.purchase.findUnique({
+      where: { id },
+      include: { items: { include: { product: true } } },
+    });
+    if (!purchase) throw new NotFoundException('Achat introuvable');
+    if (purchase.status === PurchaseStatus.cancelled) {
+      throw new BadRequestException('Cet achat est déjà annulé');
+    }
+
+    // Garde anti-stock-négatif : on ne peut pas retirer plus que le stock courant.
+    for (const item of purchase.items) {
+      if (item.product.stock < item.quantity) {
+        throw new BadRequestException(
+          `Annulation impossible : « ${item.product.name} » n'a que ${item.product.stock} en stock ` +
+            `(marchandise déjà vendue), ${item.quantity} à retirer`,
+        );
+      }
+    }
+
+    return this.prisma.$transaction(async (tx) => {
+      for (const item of purchase.items) {
+        await tx.product.update({
+          where: { id: item.productId },
+          data: { stock: { decrement: item.quantity } },
+        });
+        await tx.stockMovement.create({
+          data: {
+            productId: item.productId,
+            type: MovementType.out,
+            quantity: item.quantity,
+            reason: 'Annulation achat',
+            sourceId: purchase.id,
+          },
+        });
+      }
+      return tx.purchase.update({
+        where: { id },
+        data: { status: PurchaseStatus.cancelled },
+        include: { items: true },
+      });
+    });
   }
 }
