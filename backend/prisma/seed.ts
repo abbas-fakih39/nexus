@@ -145,7 +145,7 @@ async function main() {
 
   // --- Achats fournisseurs de démo ---
   // Réappro de produits à stock sain (on évite les ruptures/faibles qui illustrent les badges).
-  // Reproduit la logique du service : incrément du stock + mouvement `Achat` + maj costPrice.
+  // Reproduit la logique du service : incrément du stock + mouvement `Achat` + CMUP.
   const round2 = (n: number) => Math.round(n * 100) / 100;
   type SeedPurchaseItem = { sku: string; quantity: number; unitCost: number };
   async function seedPurchase(
@@ -170,9 +170,23 @@ async function main() {
       },
     });
     for (const it of items) {
+      const product = await prisma.product.findUnique({
+        where: { id: bySku[it.sku] },
+      });
+      if (!product) continue;
+      // CMUP (cohérent avec PurchasesService).
+      const newStock = product.stock + it.quantity;
+      const newCost =
+        product.stock <= 0
+          ? it.unitCost
+          : round2(
+              (product.stock * Number(product.costPrice) +
+                it.quantity * it.unitCost) /
+                newStock,
+            );
       await prisma.product.update({
         where: { id: bySku[it.sku] },
-        data: { stock: { increment: it.quantity }, costPrice: it.unitCost },
+        data: { stock: { increment: it.quantity }, costPrice: newCost },
       });
       await prisma.stockMovement.create({
         data: {

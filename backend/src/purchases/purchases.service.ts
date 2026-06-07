@@ -31,6 +31,8 @@ export class PurchasesService {
         productId: string;
         quantity: number;
         unitCost: number;
+        prevStock: number;
+        prevCost: number;
       }[] = [];
 
       for (const item of dto.items) {
@@ -48,6 +50,8 @@ export class PurchasesService {
           productId: product.id,
           quantity: item.quantity,
           unitCost,
+          prevStock: product.stock,
+          prevCost: Number(product.costPrice),
         });
       }
 
@@ -57,25 +61,40 @@ export class PurchasesService {
           notes: dto.notes,
           totalAmount: round2(totalAmount),
           createdById: userId,
-          items: { create: itemsData },
+          items: {
+            create: itemsData.map((it) => ({
+              productId: it.productId,
+              quantity: it.quantity,
+              unitCost: it.unitCost,
+            })),
+          },
         },
         include: { items: { include: { product: true } } },
       });
 
-      for (const item of itemsData) {
+      for (const it of itemsData) {
+        // CMUP (coût moyen unitaire pondéré) : on recalcule le coût courant.
+        // Stock nul/négatif → on repart du coût de cet achat.
+        const newStock = it.prevStock + it.quantity;
+        const newCost =
+          it.prevStock <= 0
+            ? it.unitCost
+            : round2(
+                (it.prevStock * it.prevCost + it.quantity * it.unitCost) /
+                  newStock,
+              );
         await tx.product.update({
-          where: { id: item.productId },
+          where: { id: it.productId },
           data: {
-            stock: { increment: item.quantity },
-            // Le dernier coût d'achat devient le coût courant du produit.
-            costPrice: item.unitCost,
+            stock: { increment: it.quantity },
+            costPrice: newCost,
           },
         });
         await tx.stockMovement.create({
           data: {
-            productId: item.productId,
+            productId: it.productId,
             type: MovementType.in,
-            quantity: item.quantity,
+            quantity: it.quantity,
             reason: 'Achat',
             sourceId: purchase.id,
           },
@@ -124,6 +143,8 @@ export class PurchasesService {
   /**
    * Annule un achat (owner) : retire du stock la marchandise reçue + mouvements `out`.
    * Refuse si la marchandise a déjà été (partiellement) revendue — le stock passerait sous 0.
+   * Note : le CMUP (costPrice) n'est PAS recalculé à l'annulation — l'inverser proprement
+   * supposerait de rejouer tout l'historique. Simplification assumée (correction en avant).
    */
   async cancel(id: string) {
     const purchase = await this.prisma.purchase.findUnique({
