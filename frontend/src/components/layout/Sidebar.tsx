@@ -11,10 +11,10 @@ export default function Sidebar() {
       {/* Marque boutique (nom + logo pilotables depuis Paramètres à terme) */}
       <div className="flex items-center gap-3 px-2">
         <div className="grid h-9 w-9 place-items-center rounded-xl bg-accent text-sm font-bold tracking-tight text-white shadow-sm">
-          ÉA
+          AS
         </div>
         <div className="flex flex-col leading-none">
-          <span className="text-[17px] font-bold tracking-tight">Épicerie Amrani</span>
+          <span className="text-[17px] font-bold tracking-tight">Amrani Sport</span>
           <span className="mt-1 text-[11.5px] font-medium text-white/50">Boutique Bastille</span>
         </div>
       </div>

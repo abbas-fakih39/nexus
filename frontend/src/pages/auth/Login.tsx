@@ -105,7 +105,7 @@ export default function Login() {
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="vous@epicerie-amrani.fr"
+                  placeholder="vous@amrani-sport.fr"
                   className="h-11 w-full rounded-xl border border-border bg-canvas pl-11 pr-3 text-[15px] font-medium text-ink outline-none transition placeholder:font-normal placeholder:text-ink-faint hover:border-border-strong focus:border-accent focus:bg-surface focus:ring-4 focus:ring-accent/15"
                 />
               </div>
