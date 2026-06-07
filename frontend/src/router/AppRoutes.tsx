@@ -9,6 +9,7 @@ import StockLayout from '../pages/stock/StockLayout';
 import Stock from '../pages/stock/Stock';
 import CategoriesPage from '../pages/stock/CategoriesPage';
 import SuppliersPage from '../pages/stock/SuppliersPage';
+import NouvelleVente from '../pages/sales/NouvelleVente';
 
 /** Redirige `/` vers l'accueil du rôle (le profil est garanti par PrivateRoute). */
 function RoleHome() {
@@ -47,7 +48,7 @@ export default function AppRoutes() {
               <Route path="categories" element={<CategoriesPage />} />
               <Route path="fournisseurs" element={<SuppliersPage />} />
             </Route>
-            <Route path="ventes" element={<Placeholder />} />
+            <Route path="ventes" element={<NouvelleVente />} />
           </Route>
         </Route>
       </Route>
