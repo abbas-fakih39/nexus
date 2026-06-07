@@ -31,6 +31,7 @@ export default function NouvelAchat() {
 
   const [search, setSearch] = useState('');
   const [categoryId, setCategoryId] = useState('');
+  const [onlyThisSupplier, setOnlyThisSupplier] = useState(false);
 
   const [cart, setCart] = useState<CartLine[]>([]);
   const [supplierId, setSupplierId] = useState('');
@@ -54,14 +55,26 @@ export default function NouvelAchat() {
       .finally(() => setLoading(false));
   }, []);
 
+  const selectedSupplierName = useMemo(
+    () => suppliers.find((s) => s.id === supplierId)?.name ?? '',
+    [suppliers, supplierId],
+  );
+
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
-    return products.filter((p) => {
+    const list = products.filter((p) => {
       if (categoryId && p.categoryId !== categoryId) return false;
       if (q && !p.name.toLowerCase().includes(q) && !(p.sku ?? '').toLowerCase().includes(q)) return false;
       return true;
     });
-  }, [products, search, categoryId]);
+    if (!supplierId) return list;
+    // « Ce fournisseur uniquement » → on masque le reste ; sinon on remonte juste ses produits en haut.
+    if (onlyThisSupplier) return list.filter((p) => p.supplierId === supplierId);
+    return [...list].sort(
+      (a, b) =>
+        (a.supplierId === supplierId ? 0 : 1) - (b.supplierId === supplierId ? 0 : 1),
+    );
+  }, [products, search, categoryId, supplierId, onlyThisSupplier]);
 
   const total = useMemo(() => cart.reduce((s, l) => s + lineTotal(l), 0), [cart]);
 
@@ -143,12 +156,31 @@ export default function NouvelAchat() {
           ))}
         </div>
 
+        {/* Tri intelligent : actif dès qu'un fournisseur est choisi dans le bon de commande. */}
+        {supplierId && (
+          <label className="flex cursor-pointer items-center gap-2.5 rounded-xl border border-border bg-canvas px-3.5 py-2.5 text-[13px]">
+            <input
+              type="checkbox"
+              checked={onlyThisSupplier}
+              onChange={(e) => setOnlyThisSupplier(e.target.checked)}
+              className="h-4 w-4 accent-[#059669]"
+            />
+            <span className="text-ink-soft">
+              Produits de <span className="font-semibold text-ink">{selectedSupplierName}</span> uniquement
+            </span>
+            <span className="ml-auto text-[11.5px] text-ink-faint">
+              sinon : ses produits habituels remontent en haut
+            </span>
+          </label>
+        )}
+
         <div className="grid grid-cols-2 gap-3 xl:grid-cols-3">
           {filtered.map((p) => {
             const out = p.stock <= 0;
             const low = !out && p.stock <= p.alertThreshold;
+            const habitual = Boolean(supplierId) && p.supplierId === supplierId;
             return (
-              <div key={p.id} className="flex flex-col rounded-xl border border-border bg-surface p-3.5 shadow-sm">
+              <div key={p.id} className={`flex flex-col rounded-xl border bg-surface p-3.5 shadow-sm ${habitual ? 'border-accent/40' : 'border-border'}`}>
                 <div className="flex items-start gap-3">
                   <div className="grid h-10 w-10 shrink-0 place-items-center rounded-lg bg-accent-softer text-[13px] font-bold text-accent-deep">
                     {initials(p.name)}
@@ -158,10 +190,15 @@ export default function NouvelAchat() {
                     <div className="truncate font-mono text-[11px] text-ink-faint">{p.sku ?? '—'}</div>
                   </div>
                 </div>
-                <div className="mt-2">
+                <div className="mt-2 flex flex-wrap items-center gap-2">
                   <span className={`text-[11.5px] font-semibold ${out ? 'text-danger' : low ? 'text-warn' : 'text-ink-mute'}`}>
                     {out ? 'Rupture — à réapprovisionner' : low ? `${p.stock} en stock (faible)` : `${p.stock} en stock`}
                   </span>
+                  {habitual && (
+                    <span className="rounded-full bg-accent-softer px-2 py-0.5 text-[10.5px] font-semibold text-accent-deep">
+                      Fournisseur habituel
+                    </span>
+                  )}
                 </div>
                 <div className="mt-3 flex items-center justify-between">
                   <span className="font-mono text-[12.5px] tabular-nums text-ink-mute">
