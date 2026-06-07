@@ -92,6 +92,8 @@ model Supplier {
 model Product {
   id             String   @id @default(uuid())
   name           String
+  sku            String?  @unique
+  barcode        String?
   description    String?
   price          Decimal  @db.Decimal(10, 2)
   costPrice      Decimal? @db.Decimal(10, 2)
