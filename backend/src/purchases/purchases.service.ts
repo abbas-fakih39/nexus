@@ -3,9 +3,16 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { MovementType, Prisma, PurchaseStatus } from '@prisma/client';
+import {
+  InvoiceStatus,
+  InvoiceType,
+  MovementType,
+  Prisma,
+  PurchaseStatus,
+} from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreatePurchaseDto } from './dto/create-purchase.dto';
+import { nextInvoiceNumber } from '../invoices/invoice-number';
 
 const round2 = (n: number) => Math.round(n * 100) / 100;
 
@@ -70,6 +77,16 @@ export class PurchasesService {
           },
         },
         include: { items: { include: { product: true } } },
+      });
+
+      // Facture d'achat : à régler au fournisseur → statut « en attente » par défaut.
+      await tx.invoice.create({
+        data: {
+          number: await nextInvoiceNumber(tx, InvoiceType.purchase),
+          type: InvoiceType.purchase,
+          status: InvoiceStatus.pending,
+          purchaseId: purchase.id,
+        },
       });
 
       for (const it of itemsData) {
@@ -182,6 +199,11 @@ export class PurchasesService {
           },
         });
       }
+      // La facture liée suit le sort de l'achat.
+      await tx.invoice.updateMany({
+        where: { purchaseId: id },
+        data: { status: InvoiceStatus.cancelled },
+      });
       return tx.purchase.update({
         where: { id },
         data: { status: PurchaseStatus.cancelled },

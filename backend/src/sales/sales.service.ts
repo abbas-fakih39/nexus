@@ -3,9 +3,16 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { MovementType, Prisma, SaleStatus } from '@prisma/client';
+import {
+  InvoiceStatus,
+  InvoiceType,
+  MovementType,
+  Prisma,
+  SaleStatus,
+} from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateSaleDto } from './dto/create-sale.dto';
+import { nextInvoiceNumber } from '../invoices/invoice-number';
 
 const round2 = (n: number) => Math.round(n * 100) / 100;
 
@@ -62,6 +69,16 @@ export class SalesService {
           items: { create: itemsData },
         },
         include: { items: { include: { product: true } } },
+      });
+
+      // Facture de vente : encaissée à la caisse → statut « payée » par défaut.
+      await tx.invoice.create({
+        data: {
+          number: await nextInvoiceNumber(tx, InvoiceType.sale),
+          type: InvoiceType.sale,
+          status: InvoiceStatus.paid,
+          saleId: sale.id,
+        },
       });
 
       for (const item of dto.items) {
@@ -144,6 +161,11 @@ export class SalesService {
           },
         });
       }
+      // La facture liée suit le sort de la vente.
+      await tx.invoice.updateMany({
+        where: { saleId: id },
+        data: { status: InvoiceStatus.cancelled },
+      });
       return tx.sale.update({
         where: { id },
         data: { status: SaleStatus.cancelled },
