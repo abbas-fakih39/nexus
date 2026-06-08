@@ -72,13 +72,14 @@ export class SalesService {
       });
 
       // Facture de vente : encaissée à la caisse → statut « payée » par défaut.
-      await tx.invoice.create({
+      const invoice = await tx.invoice.create({
         data: {
           number: await nextInvoiceNumber(tx, InvoiceType.sale),
           type: InvoiceType.sale,
           status: InvoiceStatus.paid,
           saleId: sale.id,
         },
+        select: { id: true, number: true },
       });
 
       for (const item of dto.items) {
@@ -97,7 +98,7 @@ export class SalesService {
         });
       }
 
-      return sale;
+      return { ...sale, invoice };
     });
   }
 
@@ -128,6 +129,7 @@ export class SalesService {
           },
         },
         soldBy: { select: { id: true, name: true } },
+        invoice: { select: { id: true, number: true } },
       },
     });
     if (!sale) throw new NotFoundException('Vente introuvable');

@@ -80,13 +80,14 @@ export class PurchasesService {
       });
 
       // Facture d'achat : à régler au fournisseur → statut « en attente » par défaut.
-      await tx.invoice.create({
+      const invoice = await tx.invoice.create({
         data: {
           number: await nextInvoiceNumber(tx, InvoiceType.purchase),
           type: InvoiceType.purchase,
           status: InvoiceStatus.pending,
           purchaseId: purchase.id,
         },
+        select: { id: true, number: true },
       });
 
       for (const it of itemsData) {
@@ -118,7 +119,7 @@ export class PurchasesService {
         });
       }
 
-      return purchase;
+      return { ...purchase, invoice };
     });
   }
 
@@ -151,6 +152,7 @@ export class PurchasesService {
         },
         supplier: { select: { id: true, name: true } },
         createdBy: { select: { id: true, name: true } },
+        invoice: { select: { id: true, number: true } },
       },
     });
     if (!purchase) throw new NotFoundException('Achat introuvable');
