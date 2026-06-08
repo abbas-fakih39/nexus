@@ -45,6 +45,19 @@ enum MovementType {
   out
 }
 
+enum AbsenceType {
+  paid_leave // Congé payé
+  unpaid_leave // Congé sans solde
+  sick // Arrêt maladie
+  other // Autre
+}
+
+enum AbsenceStatus {
+  pending // En attente de validation
+  approved // Approuvée
+  rejected // Refusée
+}
+
 // ─── MODELS ──────────────────────────────────────────────
 
 model User {
@@ -68,12 +81,16 @@ model Employee {
   jobTitle   String
   baseSalary Decimal  @db.Decimal(10, 2)
   hiredAt    DateTime @db.Date
+  leaveQuota Int      @default(25) // Jours de congés payés annuels
   createdAt  DateTime @default(now())
 
   userId String? @unique
   user   User?   @relation(fields: [userId], references: [id])
 
-  payments SalaryPayment[]
+  payments  SalaryPayment[]
+  absences  Absence[]
+  tardiness Tardiness[]
+  overtimes Overtime[]
 }
 
 model Category {
@@ -216,6 +233,44 @@ model SalaryPayment {
 
   employeeId String
   employee   Employee @relation(fields: [employeeId], references: [id])
+}
+
+model Absence {
+  id        String        @id @default(uuid())
+  type      AbsenceType
+  startDate DateTime      @db.Date
+  endDate   DateTime      @db.Date
+  days      Decimal       @db.Decimal(5, 1) // Jours ouvrés (demi-journées possibles)
+  status    AbsenceStatus @default(pending)
+  reason    String?
+  decidedAt DateTime? // Date de décision de l'owner (approbation/refus)
+  createdAt DateTime      @default(now())
+
+  employeeId String
+  employee   Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+}
+
+model Tardiness {
+  id        String   @id @default(uuid())
+  date      DateTime @db.Date
+  minutes   Int // Minutes de retard
+  justified Boolean  @default(false)
+  note      String?
+  createdAt DateTime @default(now())
+
+  employeeId String
+  employee   Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+}
+
+model Overtime {
+  id        String   @id @default(uuid())
+  date      DateTime @db.Date
+  hours     Decimal  @db.Decimal(5, 2) // Heures supplémentaires
+  note      String?
+  createdAt DateTime @default(now())
+
+  employeeId String
+  employee   Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
 }
 
 model Settings {
