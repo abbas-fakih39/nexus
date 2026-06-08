@@ -232,6 +232,7 @@ async function main() {
       productId: string;
       quantity: number;
       unitPrice: number;
+      unitCost: number;
       discount: number;
     }[] = [];
     for (const it of items) {
@@ -240,9 +241,10 @@ async function main() {
       });
       if (!product) continue;
       const unitPrice = round2(Number(product.price));
+      const unitCost = round2(Number(product.costPrice));
       const d = it.discount ?? 0;
       totalAmount += unitPrice * it.quantity * (1 - d / 100);
-      lines.push({ productId: product.id, quantity: it.quantity, unitPrice, discount: d });
+      lines.push({ productId: product.id, quantity: it.quantity, unitPrice, unitCost, discount: d });
     }
     const finalAmount = round2(totalAmount * (1 - globalDiscount / 100));
     const sale = await prisma.sale.create({
