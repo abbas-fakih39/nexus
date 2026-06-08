@@ -20,6 +20,7 @@ import MonEspace from '../pages/dashboard/MonEspace';
 import EmployesLayout from '../pages/employees/EmployesLayout';
 import FichesEmployes from '../pages/employees/FichesEmployes';
 import SalairesPage from '../pages/employees/SalairesPage';
+import MonProfil from '../pages/employees/MonProfil';
 import ParametresLayout from '../pages/settings/ParametresLayout';
 import StoreSettings from '../pages/settings/StoreSettings';
 import Comptes from '../pages/settings/Comptes';
@@ -62,6 +63,7 @@ export default function AppRoutes() {
           {/* Employee uniquement */}
           <Route element={<RoleRoute roles={['employee']} />}>
             <Route path="mon-espace" element={<MonEspace />} />
+            <Route path="mon-profil" element={<MonProfil />} />
           </Route>
 
           {/* Partagé owner + employee */}

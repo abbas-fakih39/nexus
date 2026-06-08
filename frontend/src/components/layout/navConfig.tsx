@@ -62,6 +62,12 @@ const icons = {
       <path d="M15 20c0-2.4 1.2-4.4 3-5.4" />
     </svg>
   ),
+  profil: (
+    <svg {...svgProps}>
+      <circle cx="12" cy="8" r="3.4" />
+      <path d="M5 20c0-3.6 3.1-6 7-6s7 2.4 7 6" />
+    </svg>
+  ),
   parametres: (
     <svg {...svgProps}>
       <circle cx="12" cy="12" r="3" />
@@ -84,6 +90,7 @@ const EMPLOYEE_NAV: NavItem[] = [
   { label: 'Tableau de bord', path: '/mon-espace', icon: icons.dashboard },
   { label: 'Ventes', path: '/ventes', icon: icons.ventes },
   { label: 'Stock', path: '/stock', icon: icons.stock },
+  { label: 'Mon profil', path: '/mon-profil', icon: icons.profil },
 ];
 
 export function navForRole(role: Role): NavItem[] {

@@ -34,6 +34,21 @@ export class EmployeesService {
     return employee;
   }
 
+  /** Fiche de l'utilisateur connecté + historique de ses salaires (lecture seule). */
+  async findMine(userId: string) {
+    const employee = await this.prisma.employee.findUnique({
+      where: { userId },
+      include: {
+        user: { select: { id: true, email: true, name: true, isActive: true } },
+        payments: { orderBy: [{ month: 'desc' }, { paidAt: 'desc' }] },
+      },
+    });
+    if (!employee) {
+      throw new NotFoundException("Aucune fiche employé n'est associée à votre compte");
+    }
+    return employee;
+  }
+
   /** Vérifie qu'un compte peut être rattaché à une fiche (employé, libre). */
   private async assertLinkable(userId: string, exceptEmployeeId?: string) {
     const user = await this.prisma.user.findUnique({

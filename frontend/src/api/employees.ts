@@ -29,8 +29,33 @@ export interface EmployeeInput {
   userId?: string | null;
 }
 
+/** Ligne de salaire telle que renvoyée dans la fiche personnelle (sans l'employé). */
+export interface MySalaryLine {
+  id: string;
+  amount: string;
+  month: string;
+  note: string | null;
+  paidAt: string;
+}
+
+/** Fiche de l'utilisateur connecté + historique de ses salaires. */
+export interface MyEmployee {
+  id: string;
+  firstName: string;
+  lastName: string;
+  jobTitle: string;
+  baseSalary: string;
+  hiredAt: string;
+  createdAt: string;
+  user: LinkedAccount | null;
+  payments: MySalaryLine[];
+}
+
 export const getEmployees = () =>
   api.get<Employee[]>('/employees').then((r) => r.data);
+
+export const getMyEmployee = () =>
+  api.get<MyEmployee>('/employees/me').then((r) => r.data);
 
 export const createEmployee = (data: EmployeeInput) =>
   api.post<Employee>('/employees', data).then((r) => r.data);
