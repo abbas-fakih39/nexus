@@ -101,6 +101,16 @@ export default function FichesEmployes() {
 
   const set = (key: keyof FormState, value: string) => setForm((f) => ({ ...f, [key]: value }));
 
+  // Choisir un compte importe son nom (champ unique « name » → prénom + nom).
+  function onAccountChange(userId: string) {
+    const acc = linkableAccounts.find((a) => a.id === userId);
+    setForm((f) => {
+      if (!acc) return { ...f, userId };
+      const [first, ...rest] = acc.name.trim().split(/\s+/);
+      return { ...f, userId, firstName: first ?? f.firstName, lastName: rest.join(' ') || f.lastName };
+    });
+  }
+
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
     setFormError(null);
@@ -228,8 +238,19 @@ export default function FichesEmployes() {
           {formError && (
             <div role="alert" className="rounded-xl border border-danger/30 bg-danger-soft px-4 py-3 text-sm font-medium text-danger">{formError}</div>
           )}
+          <div>
+            <Select label="Compte de connexion (optionnel)" value={form.userId} onChange={(e) => onAccountChange(e.target.value)} autoFocus>
+              <option value="">Aucun — saisir manuellement</option>
+              {linkableAccounts.map((a) => (
+                <option key={a.id} value={a.id}>{a.name} · {a.email}</option>
+              ))}
+            </Select>
+            <p className="mt-1.5 text-[12px] text-ink-faint">
+              Choisir un compte importe automatiquement son nom. Les comptes se créent dans Paramètres → Comptes.
+            </p>
+          </div>
           <div className="grid grid-cols-2 gap-4">
-            <Input label="Prénom *" value={form.firstName} onChange={(e) => set('firstName', e.target.value)} placeholder="Sofiane" autoFocus />
+            <Input label="Prénom *" value={form.firstName} onChange={(e) => set('firstName', e.target.value)} placeholder="Sofiane" />
             <Input label="Nom *" value={form.lastName} onChange={(e) => set('lastName', e.target.value)} placeholder="Benali" />
           </div>
           <Input label="Poste *" value={form.jobTitle} onChange={(e) => set('jobTitle', e.target.value)} placeholder="Caissier, Vendeur…" />
@@ -237,15 +258,6 @@ export default function FichesEmployes() {
             <Input label="Salaire de base (€) *" type="number" min="0" step="0.01" value={form.baseSalary} onChange={(e) => set('baseSalary', e.target.value)} placeholder="1800" />
             <Input label="Date d'embauche *" type="date" value={form.hiredAt} onChange={(e) => set('hiredAt', e.target.value)} />
           </div>
-          <Select label="Compte de connexion" value={form.userId} onChange={(e) => set('userId', e.target.value)}>
-            <option value="">Aucun compte rattaché</option>
-            {linkableAccounts.map((a) => (
-              <option key={a.id} value={a.id}>{a.name} · {a.email}</option>
-            ))}
-          </Select>
-          <p className="text-[12px] text-ink-faint">
-            Une fiche peut exister sans compte. Les comptes de connexion se créent dans Paramètres → Comptes.
-          </p>
         </form>
       </Modal>
 
