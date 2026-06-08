@@ -34,6 +34,18 @@ async function main() {
     },
   });
 
+  // --- Compte employé de démo (caissier) ---
+  const employee = await prisma.user.upsert({
+    where: { email: 'employe@nexus.fr' },
+    update: { name: 'Sofiane Benali', role: 'employee' },
+    create: {
+      email: 'employe@nexus.fr',
+      password: await bcrypt.hash('emp123', 10),
+      name: 'Sofiane Benali',
+      role: 'employee',
+    },
+  });
+
   // --- Paramètres du magasin (boutique de sport) ---
   const settingsData = {
     shopName: 'Amrani Sport',
@@ -76,7 +88,7 @@ async function main() {
   const productCount = await prisma.product.count();
   if (productCount > 0) {
     console.log('Seed : produits déjà présents, démo non recréée.');
-    console.log('Connexion : owner@nexus.fr / admin123');
+    console.log('Connexion owner : owner@nexus.fr / admin123 · employé : employe@nexus.fr / emp123');
     return;
   }
 
@@ -226,6 +238,7 @@ async function main() {
     paymentMethod: 'card' | 'cash' | 'transfer',
     globalDiscount: number,
     items: SeedSaleItem[],
+    sellerId: string = owner.id,
   ) {
     let totalAmount = 0;
     const lines: {
@@ -254,7 +267,7 @@ async function main() {
         totalAmount: round2(totalAmount),
         finalAmount,
         paymentMethod,
-        soldById: owner.id,
+        soldById: sellerId,
         items: { create: lines },
       },
     });
@@ -303,12 +316,12 @@ async function main() {
   ]);
   await seedSale('Club Sportif Bastille', 'transfer', 0, [
     { sku: 'BAL-L1-T5', quantity: 5 },
-  ]);
+  ], employee.id);
 
   console.log(`Seed terminé : ${products.length} produits de démo (magasin de sport).`);
   console.log('Achats de démo : 2 réassorts fournisseurs · Ventes de démo : 3.');
   console.log(`Factures générées : ${saleSeq} de vente + ${purchaseSeq} d'achat.`);
-  console.log('Connexion : owner@nexus.fr / admin123');
+  console.log('Connexion owner : owner@nexus.fr / admin123 · employé : employe@nexus.fr / emp123');
 }
 
 main()
