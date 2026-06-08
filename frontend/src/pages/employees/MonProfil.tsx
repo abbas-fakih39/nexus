@@ -1,7 +1,25 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState, type FormEvent, type ReactNode } from 'react';
 import { getMyEmployee, type MyEmployee } from '../../api/employees';
+import {
+  createAbsence,
+  deleteAbsence,
+  ABSENCE_TYPE_LABEL,
+  ABSENCE_STATUS_LABEL,
+  type AbsenceType,
+  type AbsenceStatus,
+} from '../../api/absences';
 import { formatEuro, formatDate } from '../../utils/format';
+import Button from '../../components/ui/Button';
+import Input from '../../components/ui/Input';
+import Select from '../../components/ui/Select';
+import Modal from '../../components/ui/Modal';
+import Badge from '../../components/ui/Badge';
 import Spinner from '../../components/ui/Spinner';
+
+function apiError(err: unknown, fallback: string): string {
+  const m = (err as { response?: { data?: { message?: string | string[] } } })?.response?.data?.message;
+  return Array.isArray(m) ? m.join(', ') : (m ?? fallback);
+}
 
 /** "2026-06" → "juin 2026". */
 function formatMonth(month: string): string {
@@ -10,24 +28,77 @@ function formatMonth(month: string): string {
   return new Date(y, m - 1, 1).toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' });
 }
 
+const STATUS_TONE: Record<AbsenceStatus, 'warn' | 'success' | 'danger'> = {
+  pending: 'warn',
+  approved: 'success',
+  rejected: 'danger',
+};
+const TYPES: AbsenceType[] = ['paid_leave', 'unpaid_leave', 'sick', 'other'];
+
 export default function MonProfil() {
   const [me, setMe] = useState<MyEmployee | null>(null);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
 
-  useEffect(() => {
-    getMyEmployee()
+  const [formOpen, setFormOpen] = useState(false);
+  const [form, setForm] = useState({ type: 'paid_leave' as AbsenceType, startDate: '', endDate: '', reason: '' });
+  const [saving, setSaving] = useState(false);
+  const [formError, setFormError] = useState<string | null>(null);
+
+  const [cancelId, setCancelId] = useState<string | null>(null);
+  const [rowError, setRowError] = useState<string | null>(null);
+
+  function load() {
+    return getMyEmployee()
       .then(setMe)
       .catch((err) => {
         if ((err as { response?: { status?: number } })?.response?.status === 404) setNotFound(true);
-      })
-      .finally(() => setLoading(false));
+      });
+  }
+  useEffect(() => {
+    load().finally(() => setLoading(false));
   }, []);
 
-  const totalPaid = useMemo(
-    () => (me ? me.payments.reduce((s, p) => s + Number(p.amount), 0) : 0),
-    [me],
-  );
+  function openRequest() {
+    setForm({ type: 'paid_leave', startDate: '', endDate: '', reason: '' });
+    setFormError(null);
+    setFormOpen(true);
+  }
+
+  async function submitRequest(e: FormEvent) {
+    e.preventDefault();
+    setFormError(null);
+    if (!form.startDate || !form.endDate) return setFormError('Renseignez les dates.');
+    if (form.endDate < form.startDate) return setFormError('La date de fin doit être après le début.');
+    setSaving(true);
+    try {
+      await createAbsence({
+        type: form.type,
+        startDate: form.startDate,
+        endDate: form.endDate,
+        reason: form.reason.trim() || undefined,
+      });
+      setFormOpen(false);
+      await load();
+    } catch (err) {
+      setFormError(apiError(err, 'Échec de la demande.'));
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  async function cancel(id: string) {
+    setRowError(null);
+    setCancelId(id);
+    try {
+      await deleteAbsence(id);
+      await load();
+    } catch (err) {
+      setRowError(apiError(err, 'Annulation impossible.'));
+    } finally {
+      setCancelId(null);
+    }
+  }
 
   if (loading) {
     return (
@@ -51,11 +122,13 @@ export default function MonProfil() {
     );
   }
 
+  const lb = me.leaveBalance;
+
   return (
     <div className="flex flex-col gap-6">
       <div>
         <h2 className="text-2xl font-bold tracking-tight text-ink">Mon profil</h2>
-        <p className="mt-1 text-sm text-ink-mute">Votre fiche et l'historique de vos salaires.</p>
+        <p className="mt-1 text-sm text-ink-mute">Votre fiche, vos congés, absences et salaires.</p>
       </div>
 
       {/* Fiche */}
@@ -77,43 +150,119 @@ export default function MonProfil() {
         </dl>
       </div>
 
-      {/* Historique salaires */}
-      <div className="flex flex-col gap-3">
-        <div className="flex items-center justify-between">
-          <h3 className="text-[15px] font-bold text-ink">Historique des salaires</h3>
-          <p className="text-sm text-ink-mute">
-            Total perçu <span className="font-semibold text-ink">{formatEuro(totalPaid)}</span>
-          </p>
+      {/* Solde de congés */}
+      <div className="rounded-2xl border border-border bg-surface p-6 shadow-sm">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <h3 className="text-[15px] font-bold text-ink">Solde de congés payés</h3>
+          <Button onClick={openRequest} icon={<PlusIcon />}>Demander un congé</Button>
         </div>
-
-        <div className="overflow-hidden rounded-2xl border border-border bg-surface shadow-sm">
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b border-border text-left text-[11px] font-semibold uppercase tracking-wide text-ink-faint">
-                  <th className="px-5 py-3">Mois</th>
-                  <th className="px-5 py-3 text-right">Montant</th>
-                  <th className="px-5 py-3">Note</th>
-                  <th className="px-5 py-3">Payé le</th>
-                </tr>
-              </thead>
-              <tbody>
-                {me.payments.map((p) => (
-                  <tr key={p.id} className="border-b border-border last:border-0 hover:bg-canvas">
-                    <td className="px-5 py-3 capitalize text-ink-soft">{formatMonth(p.month)}</td>
-                    <td className="px-5 py-3 text-right font-mono tabular-nums font-semibold text-ink">{formatEuro(p.amount)}</td>
-                    <td className="px-5 py-3 text-ink-soft">{p.note ?? '—'}</td>
-                    <td className="px-5 py-3 font-mono tabular-nums text-ink-mute">{formatDate(p.paidAt)}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-          {me.payments.length === 0 && (
-            <div className="px-5 py-14 text-center text-sm text-ink-mute">Aucun salaire enregistré pour le moment.</div>
-          )}
+        <div className="mt-4 grid grid-cols-2 gap-4 sm:grid-cols-4">
+          <Stat label="Quota annuel" value={`${lb.quota} j`} />
+          <Stat label="Pris" value={`${lb.taken} j`} />
+          <Stat label="En attente" value={`${lb.pending} j`} tone="warn" />
+          <Stat label="Restants" value={`${lb.remaining} j`} tone="accent" />
         </div>
       </div>
+
+      {rowError && (
+        <div role="alert" className="rounded-xl border border-danger/30 bg-danger-soft px-4 py-3 text-sm font-medium text-danger">{rowError}</div>
+      )}
+
+      {/* Absences */}
+      <Section title="Mes absences">
+        <Table head={['Type', 'Période', 'Jours', 'Statut', 'Motif', '']}>
+          {me.absences.map((a) => (
+            <tr key={a.id} className="border-b border-border last:border-0 hover:bg-canvas">
+              <td className="px-5 py-3"><Badge tone="neutral">{ABSENCE_TYPE_LABEL[a.type]}</Badge></td>
+              <td className="px-5 py-3 font-mono tabular-nums text-ink-soft">{formatDate(a.startDate)} → {formatDate(a.endDate)}</td>
+              <td className="px-5 py-3 font-mono tabular-nums text-ink-soft">{Number(a.days)}</td>
+              <td className="px-5 py-3"><Badge tone={STATUS_TONE[a.status]}>{ABSENCE_STATUS_LABEL[a.status]}</Badge></td>
+              <td className="px-5 py-3 text-ink-soft">{a.reason ?? '—'}</td>
+              <td className="px-5 py-3 text-right">
+                {a.status === 'pending' && (
+                  <button type="button" onClick={() => cancel(a.id)} disabled={cancelId === a.id}
+                    className="rounded-lg px-2.5 py-1.5 text-[12px] font-semibold text-danger transition hover:bg-danger-soft disabled:opacity-50">Annuler</button>
+                )}
+              </td>
+            </tr>
+          ))}
+        </Table>
+        {me.absences.length === 0 && <Empty text="Aucune absence." />}
+      </Section>
+
+      {/* Retards */}
+      <Section title="Mes retards" subtitle={`${me.counters.tardinessCount} cette année · ${me.counters.tardinessMinutes} min cumulées`}>
+        <Table head={['Date', 'Retard', 'Justifié', 'Note']}>
+          {me.tardiness.map((t) => (
+            <tr key={t.id} className="border-b border-border last:border-0 hover:bg-canvas">
+              <td className="px-5 py-3 font-mono tabular-nums text-ink-soft">{formatDate(t.date)}</td>
+              <td className="px-5 py-3 font-mono tabular-nums text-ink-soft">{t.minutes} min</td>
+              <td className="px-5 py-3"><Badge tone={t.justified ? 'success' : 'warn'}>{t.justified ? 'Justifié' : 'Non justifié'}</Badge></td>
+              <td className="px-5 py-3 text-ink-soft">{t.note ?? '—'}</td>
+            </tr>
+          ))}
+        </Table>
+        {me.tardiness.length === 0 && <Empty text="Aucun retard. 👍" />}
+      </Section>
+
+      {/* Heures sup */}
+      <Section title="Mes heures supplémentaires" subtitle={`${me.counters.overtimeHours} h cette année`}>
+        <Table head={['Date', 'Heures', 'Note']}>
+          {me.overtimes.map((o) => (
+            <tr key={o.id} className="border-b border-border last:border-0 hover:bg-canvas">
+              <td className="px-5 py-3 font-mono tabular-nums text-ink-soft">{formatDate(o.date)}</td>
+              <td className="px-5 py-3 font-mono tabular-nums text-ink-soft">{Number(o.hours)} h</td>
+              <td className="px-5 py-3 text-ink-soft">{o.note ?? '—'}</td>
+            </tr>
+          ))}
+        </Table>
+        {me.overtimes.length === 0 && <Empty text="Aucune heure supplémentaire." />}
+      </Section>
+
+      {/* Salaires */}
+      <Section title="Historique des salaires">
+        <Table head={['Mois', 'Montant', 'Note', 'Payé le']}>
+          {me.payments.map((p) => (
+            <tr key={p.id} className="border-b border-border last:border-0 hover:bg-canvas">
+              <td className="px-5 py-3 capitalize text-ink-soft">{formatMonth(p.month)}</td>
+              <td className="px-5 py-3 font-mono tabular-nums font-semibold text-ink">{formatEuro(p.amount)}</td>
+              <td className="px-5 py-3 text-ink-soft">{p.note ?? '—'}</td>
+              <td className="px-5 py-3 font-mono tabular-nums text-ink-mute">{formatDate(p.paidAt)}</td>
+            </tr>
+          ))}
+        </Table>
+        {me.payments.length === 0 && <Empty text="Aucun salaire enregistré pour le moment." />}
+      </Section>
+
+      {/* Demande de congé */}
+      <Modal
+        open={formOpen}
+        onClose={() => setFormOpen(false)}
+        title="Demander un congé"
+        footer={
+          <>
+            <Button variant="secondary" onClick={() => setFormOpen(false)} disabled={saving}>Annuler</Button>
+            <Button type="submit" form="leave-form" loading={saving}>Envoyer la demande</Button>
+          </>
+        }
+      >
+        <form id="leave-form" onSubmit={submitRequest} className="flex flex-col gap-4">
+          {formError && (
+            <div role="alert" className="rounded-xl border border-danger/30 bg-danger-soft px-4 py-3 text-sm font-medium text-danger">{formError}</div>
+          )}
+          <Select label="Type *" value={form.type} onChange={(e) => setForm((f) => ({ ...f, type: e.target.value as AbsenceType }))} autoFocus>
+            {TYPES.map((t) => (
+              <option key={t} value={t}>{ABSENCE_TYPE_LABEL[t]}</option>
+            ))}
+          </Select>
+          <div className="grid grid-cols-2 gap-4">
+            <Input label="Du *" type="date" value={form.startDate} onChange={(e) => setForm((f) => ({ ...f, startDate: e.target.value }))} />
+            <Input label="Au *" type="date" value={form.endDate} onChange={(e) => setForm((f) => ({ ...f, endDate: e.target.value }))} />
+          </div>
+          <Input label="Motif" value={form.reason} onChange={(e) => setForm((f) => ({ ...f, reason: e.target.value }))} placeholder="Optionnel" />
+          <p className="text-[12px] text-ink-faint">Votre demande sera transmise au gérant pour validation.</p>
+        </form>
+      </Modal>
     </div>
   );
 }
@@ -126,3 +275,50 @@ function Field({ label, value, mono }: { label: string; value: string; mono?: bo
     </div>
   );
 }
+
+function Stat({ label, value, tone }: { label: string; value: string; tone?: 'warn' | 'accent' }) {
+  const color = tone === 'accent' ? 'text-accent-deep' : tone === 'warn' ? 'text-warn' : 'text-ink';
+  return (
+    <div className="rounded-xl border border-border bg-canvas px-4 py-3">
+      <div className="text-[11px] font-medium text-ink-mute">{label}</div>
+      <div className={`mt-0.5 font-mono text-xl font-bold tabular-nums ${color}`}>{value}</div>
+    </div>
+  );
+}
+
+function Section({ title, subtitle, children }: { title: string; subtitle?: string; children: ReactNode }) {
+  return (
+    <div className="flex flex-col gap-3">
+      <div className="flex items-baseline justify-between gap-3">
+        <h3 className="text-[15px] font-bold text-ink">{title}</h3>
+        {subtitle && <span className="text-[12px] text-ink-mute">{subtitle}</span>}
+      </div>
+      <div className="overflow-hidden rounded-2xl border border-border bg-surface shadow-sm">
+        <div className="overflow-x-auto">{children}</div>
+      </div>
+    </div>
+  );
+}
+
+function Table({ head, children }: { head: string[]; children: ReactNode }) {
+  return (
+    <table className="w-full text-sm">
+      <thead>
+        <tr className="border-b border-border text-left text-[11px] font-semibold uppercase tracking-wide text-ink-faint">
+          {head.map((h, i) => (
+            <th key={i} className={`px-5 py-3 ${i === head.length - 1 ? 'text-right' : ''}`}>{h}</th>
+          ))}
+        </tr>
+      </thead>
+      <tbody>{children}</tbody>
+    </table>
+  );
+}
+
+function Empty({ text }: { text: string }) {
+  return <div className="px-5 py-12 text-center text-sm text-ink-mute">{text}</div>;
+}
+
+const PlusIcon = () => (
+  <svg className="h-[18px] w-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" /></svg>
+);
