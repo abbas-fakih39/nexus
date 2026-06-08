@@ -28,6 +28,7 @@ export class SalesService {
         productId: string;
         quantity: number;
         unitPrice: number;
+        unitCost: number;
         discount: number;
       }[] = [];
 
@@ -45,12 +46,15 @@ export class SalesService {
         }
         // Prix figé depuis la base (jamais depuis le client).
         const unitPrice = Number(product.price);
+        // Coût (CMUP) figé à l'instant de la vente → marge historique exacte.
+        const unitCost = round2(Number(product.costPrice));
         const itemDiscount = item.discount ?? 0;
         totalAmount += unitPrice * item.quantity * (1 - itemDiscount / 100);
         itemsData.push({
           productId: product.id,
           quantity: item.quantity,
           unitPrice: round2(unitPrice),
+          unitCost,
           discount: itemDiscount,
         });
       }

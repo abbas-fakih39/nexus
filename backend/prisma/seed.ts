@@ -34,6 +34,18 @@ async function main() {
     },
   });
 
+  // --- Compte employé de démo (caissier) ---
+  const employee = await prisma.user.upsert({
+    where: { email: 'employe@nexus.fr' },
+    update: { name: 'Sofiane Benali', role: 'employee' },
+    create: {
+      email: 'employe@nexus.fr',
+      password: await bcrypt.hash('emp123', 10),
+      name: 'Sofiane Benali',
+      role: 'employee',
+    },
+  });
+
   // --- Paramètres du magasin (boutique de sport) ---
   const settingsData = {
     shopName: 'Amrani Sport',
@@ -76,7 +88,7 @@ async function main() {
   const productCount = await prisma.product.count();
   if (productCount > 0) {
     console.log('Seed : produits déjà présents, démo non recréée.');
-    console.log('Connexion : owner@nexus.fr / admin123');
+    console.log('Connexion owner : owner@nexus.fr / admin123 · employé : employe@nexus.fr / emp123');
     return;
   }
 
@@ -226,12 +238,14 @@ async function main() {
     paymentMethod: 'card' | 'cash' | 'transfer',
     globalDiscount: number,
     items: SeedSaleItem[],
+    sellerId: string = owner.id,
   ) {
     let totalAmount = 0;
     const lines: {
       productId: string;
       quantity: number;
       unitPrice: number;
+      unitCost: number;
       discount: number;
     }[] = [];
     for (const it of items) {
@@ -240,9 +254,10 @@ async function main() {
       });
       if (!product) continue;
       const unitPrice = round2(Number(product.price));
+      const unitCost = round2(Number(product.costPrice));
       const d = it.discount ?? 0;
       totalAmount += unitPrice * it.quantity * (1 - d / 100);
-      lines.push({ productId: product.id, quantity: it.quantity, unitPrice, discount: d });
+      lines.push({ productId: product.id, quantity: it.quantity, unitPrice, unitCost, discount: d });
     }
     const finalAmount = round2(totalAmount * (1 - globalDiscount / 100));
     const sale = await prisma.sale.create({
@@ -252,7 +267,7 @@ async function main() {
         totalAmount: round2(totalAmount),
         finalAmount,
         paymentMethod,
-        soldById: owner.id,
+        soldById: sellerId,
         items: { create: lines },
       },
     });
@@ -301,12 +316,12 @@ async function main() {
   ]);
   await seedSale('Club Sportif Bastille', 'transfer', 0, [
     { sku: 'BAL-L1-T5', quantity: 5 },
-  ]);
+  ], employee.id);
 
   console.log(`Seed terminé : ${products.length} produits de démo (magasin de sport).`);
   console.log('Achats de démo : 2 réassorts fournisseurs · Ventes de démo : 3.');
   console.log(`Factures générées : ${saleSeq} de vente + ${purchaseSeq} d'achat.`);
-  console.log('Connexion : owner@nexus.fr / admin123');
+  console.log('Connexion owner : owner@nexus.fr / admin123 · employé : employe@nexus.fr / emp123');
 }
 
 main()
