@@ -138,7 +138,7 @@ export default function Comptes() {
 
       <div className="overflow-hidden rounded-2xl border border-border bg-surface shadow-sm">
         <div className="overflow-x-auto">
-          <table className="w-full text-sm">
+          <table aria-label="Comptes utilisateurs" className="w-full text-sm">
             <thead>
               <tr className="border-b border-border text-left text-[11px] font-semibold uppercase tracking-wide text-ink-faint">
                 <th className="px-5 py-3">Utilisateur</th>

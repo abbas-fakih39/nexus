@@ -191,7 +191,7 @@ export default function MonProfil() {
 
       {/* Absences */}
       <Section title="Mes absences">
-        <Table head={['Type', 'Période', 'Jours', 'Statut', 'Motif', '']}>
+        <Table label="Mes absences" head={['Type', 'Période', 'Jours', 'Statut', 'Motif', '']}>
           {me.absences.map((a) => (
             <tr key={a.id} className="border-b border-border last:border-0 hover:bg-canvas">
               <td className="px-5 py-3"><Badge tone="neutral">{ABSENCE_TYPE_LABEL[a.type]}</Badge></td>
@@ -213,7 +213,7 @@ export default function MonProfil() {
 
       {/* Retards */}
       <Section title="Mes retards" subtitle={`${me.counters.tardinessCount} cette année · ${me.counters.tardinessMinutes} min cumulées`}>
-        <Table head={['Date', 'Retard', 'Justifié', 'Note']}>
+        <Table label="Mes retards" head={['Date', 'Retard', 'Justifié', 'Note']}>
           {me.tardiness.map((t) => (
             <tr key={t.id} className="border-b border-border last:border-0 hover:bg-canvas">
               <td className="px-5 py-3 font-mono tabular-nums text-ink-soft">{formatDate(t.date)}</td>
@@ -228,7 +228,7 @@ export default function MonProfil() {
 
       {/* Heures sup */}
       <Section title="Mes heures supplémentaires" subtitle={`${me.counters.overtimeHours} h cette année`}>
-        <Table head={['Date', 'Heures', 'Note']}>
+        <Table label="Mes heures supplémentaires" head={['Date', 'Heures', 'Note']}>
           {me.overtimes.map((o) => (
             <tr key={o.id} className="border-b border-border last:border-0 hover:bg-canvas">
               <td className="px-5 py-3 font-mono tabular-nums text-ink-soft">{formatDate(o.date)}</td>
@@ -242,7 +242,7 @@ export default function MonProfil() {
 
       {/* Salaires */}
       <Section title="Historique des salaires">
-        <Table head={['Mois', 'Montant', 'Note', 'Payé le']}>
+        <Table label="Historique des salaires" head={['Mois', 'Montant', 'Note', 'Payé le']}>
           {me.payments.map((p) => (
             <tr key={p.id} className="border-b border-border last:border-0 hover:bg-canvas">
               <td className="px-5 py-3 capitalize text-ink-soft">{formatMonth(p.month)}</td>
@@ -353,9 +353,9 @@ function Section({ title, subtitle, children }: { title: string; subtitle?: stri
   );
 }
 
-function Table({ head, children }: { head: string[]; children: ReactNode }) {
+function Table({ head, children, label }: { head: string[]; children: ReactNode; label: string }) {
   return (
-    <table className="w-full text-sm">
+    <table aria-label={label} className="w-full text-sm">
       <thead>
         <tr className="border-b border-border text-left text-[11px] font-semibold uppercase tracking-wide text-ink-faint">
           {head.map((h, i) => (

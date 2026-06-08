@@ -153,7 +153,7 @@ export default function PresencePage() {
         title="Retards"
         action={<Button onClick={openTard} icon={<PlusIcon />} disabled={noEmployees}>Ajouter un retard</Button>}
       >
-        <Table head={['Employé', 'Date', 'Retard', 'Justifié', 'Note', '']}>
+        <Table label="Retards" head={['Employé', 'Date', 'Retard', 'Justifié', 'Note', '']}>
           {tardiness.map((t) => (
             <tr key={t.id} className="border-b border-border last:border-0 hover:bg-canvas">
               <td className="px-5 py-3 font-semibold text-ink">{t.employee.firstName} {t.employee.lastName}</td>
@@ -173,7 +173,7 @@ export default function PresencePage() {
         title="Heures supplémentaires"
         action={<Button onClick={openOver} icon={<PlusIcon />} disabled={noEmployees}>Ajouter des heures sup</Button>}
       >
-        <Table head={['Employé', 'Date', 'Heures', 'Note', '']}>
+        <Table label="Heures supplémentaires" head={['Employé', 'Date', 'Heures', 'Note', '']}>
           {overtime.map((o) => (
             <tr key={o.id} className="border-b border-border last:border-0 hover:bg-canvas">
               <td className="px-5 py-3 font-semibold text-ink">{o.employee.firstName} {o.employee.lastName}</td>
@@ -252,9 +252,9 @@ function Section({ title, action, children }: { title: string; action: ReactNode
   );
 }
 
-function Table({ head, children }: { head: string[]; children: ReactNode }) {
+function Table({ head, children, label }: { head: string[]; children: ReactNode; label: string }) {
   return (
-    <table className="w-full text-sm">
+    <table aria-label={label} className="w-full text-sm">
       <thead>
         <tr className="border-b border-border text-left text-[11px] font-semibold uppercase tracking-wide text-ink-faint">
           {head.map((h, i) => (

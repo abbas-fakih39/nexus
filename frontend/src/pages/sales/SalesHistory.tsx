@@ -141,7 +141,7 @@ export default function SalesHistory() {
           </div>
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full text-sm">
+            <table aria-label="Historique des ventes" className="w-full text-sm">
               <thead>
                 <tr className="border-b border-border text-left text-[11px] font-semibold uppercase tracking-wide text-ink-faint">
                   <th className="px-5 py-3">Date</th>
@@ -255,7 +255,7 @@ function SaleDetailView({ detail }: { detail: SaleDetail }) {
 
       {/* Lignes */}
       <div className="overflow-hidden rounded-xl border border-border">
-        <table className="w-full text-sm">
+        <table aria-label="Articles de la vente" className="w-full text-sm">
           <thead>
             <tr className="border-b border-border bg-canvas text-left text-[11px] font-semibold uppercase tracking-wide text-ink-faint">
               <th className="px-4 py-2.5">Article</th>

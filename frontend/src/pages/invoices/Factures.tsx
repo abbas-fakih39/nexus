@@ -112,7 +112,7 @@ export default function Factures() {
           </div>
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full text-sm">
+            <table aria-label="Factures" className="w-full text-sm">
               <thead>
                 <tr className="border-b border-border text-left text-[11px] font-semibold uppercase tracking-wide text-ink-faint">
                   <th className="px-5 py-3">Numéro</th>

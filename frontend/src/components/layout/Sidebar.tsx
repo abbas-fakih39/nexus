@@ -9,7 +9,7 @@ function monogram(name: string): string {
   return (letters || 'N').toUpperCase();
 }
 
-export default function Sidebar() {
+export default function Sidebar({ open = false, onClose }: { open?: boolean; onClose?: () => void }) {
   const user = useAuthStore((s) => s.user);
   const items = navForRole(user?.role ?? 'employee');
 
@@ -18,7 +18,21 @@ export default function Sidebar() {
   const logo = settings?.logoPath;
 
   return (
-    <aside className="sticky top-0 flex h-screen flex-col overflow-hidden border-r border-white/10 bg-sidebar px-4 pb-5 pt-6 text-white">
+    <>
+      {/* Fond cliquable du tiroir (mobile uniquement) */}
+      <div
+        className={`fixed inset-0 z-30 bg-ink/40 backdrop-blur-[2px] transition-opacity lg:hidden ${
+          open ? 'opacity-100' : 'pointer-events-none opacity-0'
+        }`}
+        onClick={onClose}
+        aria-hidden="true"
+      />
+      <aside
+        id="app-sidebar"
+        className={`fixed inset-y-0 left-0 z-40 flex h-screen w-[264px] flex-col overflow-hidden border-r border-white/10 bg-sidebar px-4 pb-5 pt-6 text-white transition-transform duration-200 lg:sticky lg:top-0 lg:z-auto lg:w-auto lg:translate-x-0 ${
+          open ? 'translate-x-0' : '-translate-x-full'
+        }`}
+      >
       {/* Marque boutique (nom + logo pilotés depuis Paramètres) */}
       <div className="flex items-center gap-3 px-2">
         {logo ? (
@@ -45,6 +59,7 @@ export default function Sidebar() {
           <NavLink
             key={item.path}
             to={item.path}
+            onClick={onClose}
             className={({ isActive }) =>
               [
                 'flex items-center gap-3 rounded-[9px] px-3 py-2.5 text-sm font-medium transition',
@@ -77,6 +92,7 @@ export default function Sidebar() {
         <span>© 2026 Nexus</span>
         <span className="rounded-full bg-white/10 px-2 py-0.5 font-mono text-[10.5px]">v1.0.0</span>
       </div>
-    </aside>
+      </aside>
+    </>
   );
 }
