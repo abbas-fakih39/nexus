@@ -8,10 +8,20 @@ import {
   type InvoiceStatus,
 } from '../../api/invoices';
 import { formatEuro, formatDateTime } from '../../utils/format';
+import Input from '../../components/ui/Input';
 import Select from '../../components/ui/Select';
 import Badge from '../../components/ui/Badge';
 import Spinner from '../../components/ui/Spinner';
+import Pagination from '../../components/ui/Pagination';
+import { usePagination } from '../../hooks/usePagination';
 import InvoiceActions from '../../components/InvoiceActions';
+
+const searchIcon = (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <circle cx="11" cy="11" r="8" />
+    <line x1="21" y1="21" x2="16.65" y2="16.65" />
+  </svg>
+);
 
 const STATUS_BADGE: Record<InvoiceStatus, { tone: 'success' | 'warn' | 'danger'; label: string }> = {
   paid: { tone: 'success', label: 'Payée' },
@@ -34,6 +44,7 @@ export default function Factures() {
   const [loading, setLoading] = useState(true);
   const [type, setType] = useState<'all' | InvoiceType>('all');
   const [status, setStatus] = useState<'all' | InvoiceStatus>('all');
+  const [search, setSearch] = useState('');
   const [busyId, setBusyId] = useState<string | null>(null);
 
   async function load() {
@@ -49,12 +60,20 @@ export default function Factures() {
     load();
   }, []);
 
-  const filtered = useMemo(
-    () =>
-      invoices.filter(
-        (i) => (type === 'all' || i.type === type) && (status === 'all' || i.status === status),
-      ),
-    [invoices, type, status],
+  const filtered = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    return invoices.filter(
+      (i) =>
+        (type === 'all' || i.type === type) &&
+        (status === 'all' || i.status === status) &&
+        (!q || i.number.toLowerCase().includes(q) || partyOf(i).toLowerCase().includes(q)),
+    );
+  }, [invoices, type, status, search]);
+
+  const { page, pageCount, pageItems, total, pageSize, setPage } = usePagination(
+    filtered,
+    10,
+    `${type}|${status}|${search}`,
   );
 
   const stats = useMemo(() => {
@@ -91,6 +110,7 @@ export default function Factures() {
 
       {/* Filtres */}
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        <Input label="Recherche" icon={searchIcon} placeholder="Numéro, client, fournisseur…" value={search} onChange={(e) => setSearch(e.target.value)} />
         <Select label="Type" value={type} onChange={(e) => setType(e.target.value as 'all' | InvoiceType)}>
           <option value="all">Tous les types</option>
           <option value="sale">Ventes</option>
@@ -125,7 +145,7 @@ export default function Factures() {
                 </tr>
               </thead>
               <tbody>
-                {filtered.map((inv) => {
+                {pageItems.map((inv) => {
                   const badge = STATUS_BADGE[inv.status];
                   return (
                     <tr key={inv.id} className="border-b border-border last:border-0 hover:bg-canvas">
@@ -163,6 +183,8 @@ export default function Factures() {
                 })}
               </tbody>
             </table>
+
+            <Pagination page={page} pageCount={pageCount} total={total} pageSize={pageSize} onChange={setPage} />
 
             {filtered.length === 0 && (
               <div className="px-5 py-16 text-center text-sm text-ink-mute">Aucune facture pour ces critères.</div>

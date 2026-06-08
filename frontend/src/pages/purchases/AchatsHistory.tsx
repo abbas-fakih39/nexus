@@ -14,7 +14,16 @@ import Select from '../../components/ui/Select';
 import Badge from '../../components/ui/Badge';
 import Modal from '../../components/ui/Modal';
 import Spinner from '../../components/ui/Spinner';
+import Pagination from '../../components/ui/Pagination';
+import { usePagination } from '../../hooks/usePagination';
 import InvoiceActions from '../../components/InvoiceActions';
+
+const searchIcon = (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <circle cx="11" cy="11" r="8" />
+    <line x1="21" y1="21" x2="16.65" y2="16.65" />
+  </svg>
+);
 
 const STATUS_BADGE: Record<PurchaseStatus, { tone: 'success' | 'danger'; label: string }> = {
   received: { tone: 'success', label: 'Reçu' },
@@ -28,6 +37,7 @@ export default function AchatsHistory() {
   const [from, setFrom] = useState('');
   const [to, setTo] = useState('');
   const [status, setStatus] = useState<'all' | PurchaseStatus>('all');
+  const [search, setSearch] = useState('');
 
   // Détail (modale)
   const [detail, setDetail] = useState<PurchaseDetail | null>(null);
@@ -49,9 +59,19 @@ export default function AchatsHistory() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [from, to]);
 
-  const filtered = useMemo(
-    () => (status === 'all' ? purchases : purchases.filter((p) => p.status === status)),
-    [purchases, status],
+  const filtered = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    return purchases.filter(
+      (p) =>
+        (status === 'all' || p.status === status) &&
+        (!q || (p.supplier?.name ?? '').toLowerCase().includes(q)),
+    );
+  }, [purchases, status, search]);
+
+  const { page, pageCount, pageItems, total, pageSize, setPage } = usePagination(
+    filtered,
+    10,
+    `${status}|${search}|${from}|${to}`,
   );
 
   const stats = useMemo(() => {
@@ -108,7 +128,9 @@ export default function AchatsHistory() {
       </div>
 
       {/* Filtres */}
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="flex flex-col gap-3">
+        <Input label="Recherche fournisseur" icon={searchIcon} placeholder="Nom du fournisseur…" value={search} onChange={(e) => setSearch(e.target.value)} />
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <Input type="date" label="Du" value={from} onChange={(e) => setFrom(e.target.value)} />
         <Input type="date" label="Au" value={to} onChange={(e) => setTo(e.target.value)} />
         <Select label="Statut" value={status} onChange={(e) => setStatus(e.target.value as 'all' | PurchaseStatus)}>
@@ -120,6 +142,7 @@ export default function AchatsHistory() {
           <Button variant="secondary" size="md" className="w-full" onClick={resetFilters}>
             Réinitialiser
           </Button>
+        </div>
         </div>
       </div>
 
@@ -144,7 +167,7 @@ export default function AchatsHistory() {
                 </tr>
               </thead>
               <tbody>
-                {filtered.map((p) => {
+                {pageItems.map((p) => {
                   const badge = STATUS_BADGE[p.status];
                   return (
                     <tr
@@ -172,6 +195,8 @@ export default function AchatsHistory() {
                 })}
               </tbody>
             </table>
+
+            <Pagination page={page} pageCount={pageCount} total={total} pageSize={pageSize} onChange={setPage} />
 
             {filtered.length === 0 && (
               <div className="px-5 py-16 text-center text-sm text-ink-mute">

@@ -10,6 +10,8 @@ import Select from '../../components/ui/Select';
 import Badge from '../../components/ui/Badge';
 import Modal from '../../components/ui/Modal';
 import Spinner from '../../components/ui/Spinner';
+import Pagination from '../../components/ui/Pagination';
+import { usePagination } from '../../hooks/usePagination';
 import ProductFormModal from './ProductFormModal';
 
 type Status = 'ok' | 'faible' | 'rupture';
@@ -85,6 +87,12 @@ export default function Stock() {
       return true;
     });
   }, [products, search, categoryId, supplierId, status]);
+
+  const { page, pageCount, pageItems, total, pageSize, setPage } = usePagination(
+    filtered,
+    10,
+    `${search}|${categoryId}|${supplierId}|${status}`,
+  );
 
   function openAdd() {
     setEditing(null);
@@ -176,7 +184,7 @@ export default function Stock() {
               </tr>
             </thead>
             <tbody>
-              {filtered.map((p) => {
+              {pageItems.map((p) => {
                 const st = statusOf(p);
                 const badge = STATUS_BADGE[st];
                 return (
@@ -213,6 +221,8 @@ export default function Stock() {
             </tbody>
           </table>
         </div>
+
+        <Pagination page={page} pageCount={pageCount} total={total} pageSize={pageSize} onChange={setPage} />
 
         {filtered.length === 0 && (
           <div className="px-5 py-16 text-center text-sm text-ink-mute">
