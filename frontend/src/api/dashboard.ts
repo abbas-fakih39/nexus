@@ -78,6 +78,13 @@ export interface DormantProduct {
 export const getDormantProducts = (period: Period) =>
   api.get<DormantProduct[]>(`/dashboard/dormant-products?period=${period}`).then((r) => r.data);
 
+export interface MyDay {
+  salesToday: number;
+  itemsSold: number;
+}
+
+export const getMyDay = () => api.get<MyDay>('/dashboard/my-day').then((r) => r.data);
+
 export const getLowStock = () =>
   api.get<LowStockProduct[]>('/dashboard/low-stock').then((r) => r.data);
 

@@ -3,6 +3,7 @@ import { DashboardService } from './dashboard.service';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../common/guards/roles.guard';
 import { Roles } from '../common/decorators/roles.decorator';
+import { CurrentUser } from '../common/decorators/current-user.decorator';
 
 @Controller('dashboard')
 @UseGuards(JwtAuthGuard, RolesGuard)
@@ -40,6 +41,11 @@ export class DashboardController {
   }
 
   // Accessibles aussi à l'employé (son espace).
+  @Get('my-day')
+  myDay(@CurrentUser() user: { id: string }) {
+    return this.dash.myDay(user.id);
+  }
+
   @Get('low-stock')
   lowStock() {
     return this.dash.lowStock();

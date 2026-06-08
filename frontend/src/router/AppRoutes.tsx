@@ -17,6 +17,7 @@ import NouvelAchat from '../pages/purchases/NouvelAchat';
 import AchatsHistory from '../pages/purchases/AchatsHistory';
 import Factures from '../pages/invoices/Factures';
 import Dashboard from '../pages/dashboard/Dashboard';
+import MonEspace from '../pages/dashboard/MonEspace';
 
 /** Redirige `/` vers l'accueil du rôle (le profil est garanti par PrivateRoute). */
 function RoleHome() {
@@ -49,7 +50,7 @@ export default function AppRoutes() {
 
           {/* Employee uniquement */}
           <Route element={<RoleRoute roles={['employee']} />}>
-            <Route path="mon-espace" element={<Placeholder />} />
+            <Route path="mon-espace" element={<MonEspace />} />
           </Route>
 
           {/* Partagé owner + employee */}

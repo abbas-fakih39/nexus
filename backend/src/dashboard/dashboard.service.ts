@@ -189,6 +189,17 @@ export class DashboardService {
       .then((list) => list.filter((p) => p.stock <= p.alertThreshold));
   }
 
+  /** Activité du jour de l'utilisateur courant (non financière) : ses ventes + articles. */
+  async myDay(userId: string) {
+    const from = startOfDay(new Date());
+    const sales = await this.prisma.sale.findMany({
+      where: { soldById: userId, status: 'completed', createdAt: { gte: from } },
+      select: { items: { select: { quantity: true } } },
+    });
+    const itemsSold = sales.reduce((s, x) => s + x.items.reduce((a, i) => a + i.quantity, 0), 0);
+    return { salesToday: sales.length, itemsSold };
+  }
+
   /** Dernières ventes (tous statuts). */
   recentSales() {
     return this.prisma.sale.findMany({
