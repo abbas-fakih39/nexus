@@ -152,7 +152,7 @@ export class PurchasesService {
         },
         supplier: { select: { id: true, name: true } },
         createdBy: { select: { id: true, name: true } },
-        invoice: { select: { id: true, number: true } },
+        invoice: { select: { id: true, number: true, status: true } },
       },
     });
     if (!purchase) throw new NotFoundException('Achat introuvable');

@@ -129,7 +129,7 @@ export class SalesService {
           },
         },
         soldBy: { select: { id: true, name: true } },
-        invoice: { select: { id: true, number: true } },
+        invoice: { select: { id: true, number: true, status: true } },
       },
     });
     if (!sale) throw new NotFoundException('Vente introuvable');

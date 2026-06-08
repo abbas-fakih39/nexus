@@ -15,6 +15,7 @@ import { InvoicesService } from './invoices.service';
 import { UpdateInvoiceStatusDto } from './dto/update-invoice-status.dto';
 import { buildInvoicePdf } from './invoice-pdf';
 import { buildInvoiceReceipt } from './invoice-receipt';
+import { buildPaymentReceipt } from './invoice-payment-receipt';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../common/guards/roles.guard';
 import { Roles } from '../common/decorators/roles.decorator';
@@ -40,17 +41,18 @@ export class InvoicesController {
   ) {
     const invoice = await this.invoices.findOne(id);
     const settings = await this.invoices.findSettings();
-    const isReceipt = format === 'receipt';
+    const isTicket = format === 'receipt' || format === 'payment';
 
-    const suffix = isReceipt ? '-ticket' : '';
+    const suffix = format === 'receipt' ? '-ticket' : format === 'payment' ? '-recu' : '';
     res.setHeader('Content-Type', 'application/pdf');
     res.setHeader('Content-Disposition', `inline; filename="${invoice.number}${suffix}.pdf"`);
 
-    const doc = isReceipt
+    const doc = isTicket
       ? new PDFDocument({ autoFirstPage: false })
       : new PDFDocument({ size: 'A4', margin: 50 });
     doc.pipe(res);
-    if (isReceipt) buildInvoiceReceipt(doc, invoice, settings);
+    if (format === 'receipt') buildInvoiceReceipt(doc, invoice, settings);
+    else if (format === 'payment') buildPaymentReceipt(doc, invoice, settings);
     else buildInvoicePdf(doc, invoice, settings);
     doc.end();
   }
