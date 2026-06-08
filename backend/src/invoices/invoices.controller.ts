@@ -14,6 +14,7 @@ import { InvoiceStatus, InvoiceType } from '@prisma/client';
 import { InvoicesService } from './invoices.service';
 import { UpdateInvoiceStatusDto } from './dto/update-invoice-status.dto';
 import { buildInvoicePdf } from './invoice-pdf';
+import { buildInvoiceReceipt } from './invoice-receipt';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../common/guards/roles.guard';
 import { Roles } from '../common/decorators/roles.decorator';
@@ -32,16 +33,25 @@ export class InvoicesController {
   }
 
   @Get(':id/pdf')
-  async pdf(@Param('id') id: string, @Res() res: Response) {
+  async pdf(
+    @Param('id') id: string,
+    @Res() res: Response,
+    @Query('format') format?: string,
+  ) {
     const invoice = await this.invoices.findOne(id);
     const settings = await this.invoices.findSettings();
+    const isReceipt = format === 'receipt';
 
+    const suffix = isReceipt ? '-ticket' : '';
     res.setHeader('Content-Type', 'application/pdf');
-    res.setHeader('Content-Disposition', `inline; filename="${invoice.number}.pdf"`);
+    res.setHeader('Content-Disposition', `inline; filename="${invoice.number}${suffix}.pdf"`);
 
-    const doc = new PDFDocument({ size: 'A4', margin: 50 });
+    const doc = isReceipt
+      ? new PDFDocument({ autoFirstPage: false })
+      : new PDFDocument({ size: 'A4', margin: 50 });
     doc.pipe(res);
-    buildInvoicePdf(doc, invoice, settings);
+    if (isReceipt) buildInvoiceReceipt(doc, invoice, settings);
+    else buildInvoicePdf(doc, invoice, settings);
     doc.end();
   }
 
