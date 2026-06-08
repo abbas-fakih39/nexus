@@ -64,8 +64,8 @@ export default function StoreSettings() {
     const file = e.target.files?.[0];
     if (!file) return;
     setLogoError(null);
-    if (!file.type.startsWith('image/')) {
-      setLogoError('Fichier image attendu.');
+    if (file.type !== 'image/png' && file.type !== 'image/jpeg') {
+      setLogoError('Image PNG ou JPG attendue.');
       return;
     }
     if (file.size > 2 * 1024 * 1024) {
@@ -127,7 +127,7 @@ export default function StoreSettings() {
             </div>
           )}
 
-          <input ref={fileRef} type="file" accept="image/png,image/jpeg,image/webp,image/svg+xml" onChange={onFile} className="hidden" />
+          <input ref={fileRef} type="file" accept="image/png,image/jpeg" onChange={onFile} className="hidden" />
           <div className="flex w-full flex-col gap-2">
             <Button variant="secondary" size="sm" onClick={() => fileRef.current?.click()} disabled={logoBusy}>
               Choisir une image
@@ -144,7 +144,7 @@ export default function StoreSettings() {
             )}
           </div>
           {logoError && <p className="text-center text-[12px] font-medium text-danger">{logoError}</p>}
-          <p className="text-center text-[11px] text-ink-faint">PNG, JPG, WEBP ou SVG · max 2 Mo</p>
+          <p className="text-center text-[11px] text-ink-faint">PNG ou JPG · max 2 Mo</p>
         </div>
       </div>
 
