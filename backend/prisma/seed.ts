@@ -147,6 +147,16 @@ async function main() {
   // Réappro de produits à stock sain (on évite les ruptures/faibles qui illustrent les badges).
   // Reproduit la logique du service : incrément du stock + mouvement `Achat` + CMUP.
   const round2 = (n: number) => Math.round(n * 100) / 100;
+
+  // Numérotation des factures de démo (cohérente avec InvoicesService : FV-/FA-AAAA-NNNN).
+  const year = new Date().getFullYear();
+  let saleSeq = 0;
+  let purchaseSeq = 0;
+  const invoiceNumber = (type: 'sale' | 'purchase') => {
+    const n = type === 'sale' ? ++saleSeq : ++purchaseSeq;
+    return `${type === 'sale' ? 'FV' : 'FA'}-${year}-${String(n).padStart(4, '0')}`;
+  };
+
   type SeedPurchaseItem = { sku: string; quantity: number; unitCost: number };
   async function seedPurchase(
     supplierId: string,
@@ -198,6 +208,78 @@ async function main() {
         },
       });
     }
+    // Facture d'achat (à régler → en attente).
+    await prisma.invoice.create({
+      data: {
+        number: invoiceNumber('purchase'),
+        type: 'purchase',
+        status: 'pending',
+        purchaseId: purchase.id,
+      },
+    });
+  }
+
+  // --- Ventes de démo (avec facture payée) ---
+  type SeedSaleItem = { sku: string; quantity: number; discount?: number };
+  async function seedSale(
+    clientName: string | null,
+    paymentMethod: 'card' | 'cash' | 'transfer',
+    globalDiscount: number,
+    items: SeedSaleItem[],
+  ) {
+    let totalAmount = 0;
+    const lines: {
+      productId: string;
+      quantity: number;
+      unitPrice: number;
+      discount: number;
+    }[] = [];
+    for (const it of items) {
+      const product = await prisma.product.findUnique({
+        where: { id: bySku[it.sku] },
+      });
+      if (!product) continue;
+      const unitPrice = round2(Number(product.price));
+      const d = it.discount ?? 0;
+      totalAmount += unitPrice * it.quantity * (1 - d / 100);
+      lines.push({ productId: product.id, quantity: it.quantity, unitPrice, discount: d });
+    }
+    const finalAmount = round2(totalAmount * (1 - globalDiscount / 100));
+    const sale = await prisma.sale.create({
+      data: {
+        clientName,
+        discount: globalDiscount,
+        totalAmount: round2(totalAmount),
+        finalAmount,
+        paymentMethod,
+        soldById: owner.id,
+        items: { create: lines },
+      },
+    });
+    for (const l of lines) {
+      await prisma.product.update({
+        where: { id: l.productId },
+        data: { stock: { decrement: l.quantity } },
+      });
+      await prisma.stockMovement.create({
+        data: {
+          productId: l.productId,
+          type: MovementType.out,
+          quantity: l.quantity,
+          reason: 'Vente',
+          sourceId: sale.id,
+        },
+      });
+    }
+    // Facture de vente (encaissée → payée).
+    await prisma.invoice.create({
+      data: {
+        number: invoiceNumber('sale'),
+        type: 'sale',
+        status: 'paid',
+        saleId: sale.id,
+      },
+    });
   }
 
   await seedPurchase(nike.id, 'Réassort running & football', [
@@ -209,8 +291,21 @@ async function main() {
     { sku: 'BAL-L1-T5', quantity: 20, unitCost: 13 },
   ]);
 
+  await seedSale('Jean Dupont', 'card', 0, [
+    { sku: 'RUN-PEG40-42', quantity: 1 },
+    { sku: 'CHA-LOT3', quantity: 2 },
+  ]);
+  await seedSale(null, 'cash', 5, [
+    { sku: 'BAL-L1-T5', quantity: 1 },
+    { sku: 'SHO-DOM-M', quantity: 3, discount: 10 },
+  ]);
+  await seedSale('Club Sportif Bastille', 'transfer', 0, [
+    { sku: 'BAL-L1-T5', quantity: 5 },
+  ]);
+
   console.log(`Seed terminé : ${products.length} produits de démo (magasin de sport).`);
-  console.log('Achats de démo : 2 réassorts fournisseurs.');
+  console.log('Achats de démo : 2 réassorts fournisseurs · Ventes de démo : 3.');
+  console.log(`Factures générées : ${saleSeq} de vente + ${purchaseSeq} d'achat.`);
   console.log('Connexion : owner@nexus.fr / admin123');
 }
 
