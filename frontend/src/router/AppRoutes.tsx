@@ -15,6 +15,7 @@ import SalesHistory from '../pages/sales/SalesHistory';
 import AchatsLayout from '../pages/purchases/AchatsLayout';
 import NouvelAchat from '../pages/purchases/NouvelAchat';
 import AchatsHistory from '../pages/purchases/AchatsHistory';
+import Factures from '../pages/invoices/Factures';
 
 /** Redirige `/` vers l'accueil du rôle (le profil est garanti par PrivateRoute). */
 function RoleHome() {
@@ -40,7 +41,7 @@ export default function AppRoutes() {
               <Route index element={<NouvelAchat />} />
               <Route path="historique" element={<AchatsHistory />} />
             </Route>
-            <Route path="factures" element={<Placeholder />} />
+            <Route path="factures" element={<Factures />} />
             <Route path="employes" element={<Placeholder />} />
             <Route path="parametres" element={<Placeholder />} />
           </Route>

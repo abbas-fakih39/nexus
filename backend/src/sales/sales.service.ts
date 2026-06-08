@@ -3,9 +3,16 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { MovementType, Prisma, SaleStatus } from '@prisma/client';
+import {
+  InvoiceStatus,
+  InvoiceType,
+  MovementType,
+  Prisma,
+  SaleStatus,
+} from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateSaleDto } from './dto/create-sale.dto';
+import { nextInvoiceNumber } from '../invoices/invoice-number';
 
 const round2 = (n: number) => Math.round(n * 100) / 100;
 
@@ -64,6 +71,17 @@ export class SalesService {
         include: { items: { include: { product: true } } },
       });
 
+      // Facture de vente : encaissée à la caisse → statut « payée » par défaut.
+      const invoice = await tx.invoice.create({
+        data: {
+          number: await nextInvoiceNumber(tx, InvoiceType.sale),
+          type: InvoiceType.sale,
+          status: InvoiceStatus.paid,
+          saleId: sale.id,
+        },
+        select: { id: true, number: true },
+      });
+
       for (const item of dto.items) {
         await tx.product.update({
           where: { id: item.productId },
@@ -80,7 +98,7 @@ export class SalesService {
         });
       }
 
-      return sale;
+      return { ...sale, invoice };
     });
   }
 
@@ -111,6 +129,7 @@ export class SalesService {
           },
         },
         soldBy: { select: { id: true, name: true } },
+        invoice: { select: { id: true, number: true, status: true } },
       },
     });
     if (!sale) throw new NotFoundException('Vente introuvable');
@@ -144,6 +163,11 @@ export class SalesService {
           },
         });
       }
+      // La facture liée suit le sort de la vente.
+      await tx.invoice.updateMany({
+        where: { saleId: id },
+        data: { status: InvoiceStatus.cancelled },
+      });
       return tx.sale.update({
         where: { id },
         data: { status: SaleStatus.cancelled },

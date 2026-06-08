@@ -14,6 +14,7 @@ import Select from '../../components/ui/Select';
 import Badge from '../../components/ui/Badge';
 import Modal from '../../components/ui/Modal';
 import Spinner from '../../components/ui/Spinner';
+import InvoiceActions from '../../components/InvoiceActions';
 
 const STATUS_BADGE: Record<PurchaseStatus, { tone: 'success' | 'danger'; label: string }> = {
   received: { tone: 'success', label: 'Reçu' },
@@ -190,15 +191,18 @@ export default function AchatsHistory() {
         footer={
           detail ? (
             <>
-              {cancelError && <span className="mr-auto self-center text-[13px] text-danger">{cancelError}</span>}
-              <Button variant="secondary" onClick={() => setDetail(null)} disabled={cancelling}>
-                Fermer
-              </Button>
-              {detail.status === 'received' && (
-                <Button variant="danger" onClick={confirmCancel} loading={cancelling}>
-                  Annuler l'achat
+              {detail.invoice && <InvoiceActions invoiceId={detail.invoice.id} paid={detail.invoice.status === 'paid'} />}
+              <div className="ml-auto flex items-center gap-3">
+                {cancelError && <span className="text-[13px] text-danger">{cancelError}</span>}
+                <Button variant="secondary" onClick={() => setDetail(null)} disabled={cancelling}>
+                  Fermer
                 </Button>
-              )}
+                {detail.status === 'received' && (
+                  <Button variant="danger" onClick={confirmCancel} loading={cancelling}>
+                    Annuler l'achat
+                  </Button>
+                )}
+              </div>
             </>
           ) : undefined
         }

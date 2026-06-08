@@ -3,9 +3,16 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { MovementType, Prisma, PurchaseStatus } from '@prisma/client';
+import {
+  InvoiceStatus,
+  InvoiceType,
+  MovementType,
+  Prisma,
+  PurchaseStatus,
+} from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreatePurchaseDto } from './dto/create-purchase.dto';
+import { nextInvoiceNumber } from '../invoices/invoice-number';
 
 const round2 = (n: number) => Math.round(n * 100) / 100;
 
@@ -72,6 +79,17 @@ export class PurchasesService {
         include: { items: { include: { product: true } } },
       });
 
+      // Facture d'achat : à régler au fournisseur → statut « en attente » par défaut.
+      const invoice = await tx.invoice.create({
+        data: {
+          number: await nextInvoiceNumber(tx, InvoiceType.purchase),
+          type: InvoiceType.purchase,
+          status: InvoiceStatus.pending,
+          purchaseId: purchase.id,
+        },
+        select: { id: true, number: true },
+      });
+
       for (const it of itemsData) {
         // CMUP (coût moyen unitaire pondéré) : on recalcule le coût courant.
         // Stock nul/négatif → on repart du coût de cet achat.
@@ -101,7 +119,7 @@ export class PurchasesService {
         });
       }
 
-      return purchase;
+      return { ...purchase, invoice };
     });
   }
 
@@ -134,6 +152,7 @@ export class PurchasesService {
         },
         supplier: { select: { id: true, name: true } },
         createdBy: { select: { id: true, name: true } },
+        invoice: { select: { id: true, number: true, status: true } },
       },
     });
     if (!purchase) throw new NotFoundException('Achat introuvable');
@@ -182,6 +201,11 @@ export class PurchasesService {
           },
         });
       }
+      // La facture liée suit le sort de l'achat.
+      await tx.invoice.updateMany({
+        where: { purchaseId: id },
+        data: { status: InvoiceStatus.cancelled },
+      });
       return tx.purchase.update({
         where: { id },
         data: { status: PurchaseStatus.cancelled },

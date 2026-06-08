@@ -29,6 +29,7 @@ export interface SaleItem {
 
 export interface SaleDetail extends SaleSummary {
   items: SaleItem[];
+  invoice?: { id: string; number: string; status: 'paid' | 'pending' | 'cancelled' } | null;
 }
 
 export interface CreateSaleItemInput {
