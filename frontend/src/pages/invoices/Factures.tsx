@@ -3,7 +3,6 @@ import { useAuthStore } from '../../store/authStore';
 import {
   getInvoices,
   updateInvoiceStatus,
-  openInvoicePdf,
   type InvoiceSummary,
   type InvoiceType,
   type InvoiceStatus,
@@ -12,6 +11,7 @@ import { formatEuro, formatDateTime } from '../../utils/format';
 import Select from '../../components/ui/Select';
 import Badge from '../../components/ui/Badge';
 import Spinner from '../../components/ui/Spinner';
+import InvoiceActions from '../../components/InvoiceActions';
 
 const STATUS_BADGE: Record<InvoiceStatus, { tone: 'success' | 'warn' | 'danger'; label: string }> = {
   paid: { tone: 'success', label: 'Payée' },
@@ -155,13 +155,7 @@ export default function Factures() {
                       </td>
                       <td className="px-5 py-3">
                         <div className="flex justify-end">
-                          <button
-                            type="button"
-                            onClick={() => openInvoicePdf(inv.id)}
-                            className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-surface px-2.5 py-1.5 text-[12.5px] font-semibold text-ink-soft transition hover:border-accent hover:text-accent-deep"
-                          >
-                            <PdfIcon /> PDF
-                          </button>
+                          <InvoiceActions invoiceId={inv.id} />
                         </div>
                       </td>
                     </tr>
@@ -204,11 +198,3 @@ function TypeChip({ type }: { type: InvoiceType }) {
     </span>
   );
 }
-
-const PdfIcon = () => (
-  <svg className="h-[15px] w-[15px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z" />
-    <path d="M14 3v5h5" />
-    <path d="M9 13h6M9 17h4" />
-  </svg>
-);

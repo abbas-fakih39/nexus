@@ -26,6 +26,7 @@ export interface PurchaseItem {
 
 export interface PurchaseDetail extends PurchaseSummary {
   items: PurchaseItem[];
+  invoice?: { id: string; number: string } | null;
 }
 
 export interface CreatePurchaseItemInput {

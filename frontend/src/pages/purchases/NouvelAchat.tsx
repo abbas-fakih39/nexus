@@ -9,6 +9,7 @@ import Input from '../../components/ui/Input';
 import Select from '../../components/ui/Select';
 import Modal from '../../components/ui/Modal';
 import Spinner from '../../components/ui/Spinner';
+import InvoiceActions from '../../components/InvoiceActions';
 
 interface CartLine {
   product: Product;
@@ -39,7 +40,7 @@ export default function NouvelAchat() {
 
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState<{ total: number; items: number } | null>(null);
+  const [success, setSuccess] = useState<{ total: number; items: number; invoiceId: string | null } | null>(null);
 
   function loadProducts() {
     return getProducts().then(setProducts);
@@ -114,8 +115,8 @@ export default function NouvelAchat() {
       })),
     };
     try {
-      await createPurchase(payload);
-      setSuccess({ total, items: cart.length });
+      const created = await createPurchase(payload);
+      setSuccess({ total, items: cart.length, invoiceId: created.invoice?.id ?? null });
       setCart([]);
       setSupplierId('');
       setNotes('');
@@ -298,7 +299,12 @@ export default function NouvelAchat() {
         open={Boolean(success)}
         onClose={() => setSuccess(null)}
         title="Achat enregistré ✅"
-        footer={<Button onClick={() => setSuccess(null)}>Nouvel achat</Button>}
+        footer={
+          <div className="flex w-full items-center justify-between gap-3">
+            {success?.invoiceId ? <InvoiceActions invoiceId={success.invoiceId} /> : <span />}
+            <Button onClick={() => setSuccess(null)}>Nouvel achat</Button>
+          </div>
+        }
       >
         <div className="flex flex-col gap-2 text-sm">
           <p className="text-ink-soft">
