@@ -1,5 +1,6 @@
 import {
   IsDateString,
+  IsInt,
   IsNotEmpty,
   IsNumber,
   IsOptional,
@@ -27,6 +28,12 @@ export class CreateEmployeeDto {
 
   @IsDateString()
   hiredAt: string;
+
+  /** Quota annuel de congés payés (jours). Défaut 25 si omis. */
+  @IsOptional()
+  @IsInt()
+  @Min(0)
+  leaveQuota?: number;
 
   /** Lien optionnel vers un compte de connexion (rôle employee, non déjà lié). */
   @IsOptional()

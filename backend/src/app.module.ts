@@ -4,6 +4,7 @@ import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module';
 import { EmployeesModule } from './employees/employees.module';
 import { SalariesModule } from './salaries/salaries.module';
+import { AbsencesModule } from './absences/absences.module';
 import { CategoriesModule } from './categories/categories.module';
 import { SuppliersModule } from './suppliers/suppliers.module';
 import { ProductsModule } from './products/products.module';
@@ -21,6 +22,7 @@ import { SettingsModule } from './settings/settings.module';
     UsersModule,
     EmployeesModule,
     SalariesModule,
+    AbsencesModule,
     CategoriesModule,
     SuppliersModule,
     ProductsModule,

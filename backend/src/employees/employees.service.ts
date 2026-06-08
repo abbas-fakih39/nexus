@@ -73,6 +73,7 @@ export class EmployeesService {
         jobTitle: dto.jobTitle,
         baseSalary: dto.baseSalary,
         hiredAt: new Date(dto.hiredAt),
+        leaveQuota: dto.leaveQuota ?? undefined,
         userId: dto.userId ?? null,
       },
       include: EMPLOYEE_INCLUDE,
