@@ -26,7 +26,7 @@ export interface PurchaseItem {
 
 export interface PurchaseDetail extends PurchaseSummary {
   items: PurchaseItem[];
-  invoice?: { id: string; number: string } | null;
+  invoice?: { id: string; number: string; status: 'paid' | 'pending' | 'cancelled' } | null;
 }
 
 export interface CreatePurchaseItemInput {

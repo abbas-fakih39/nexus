@@ -155,7 +155,7 @@ export default function Factures() {
                       </td>
                       <td className="px-5 py-3">
                         <div className="flex justify-end">
-                          <InvoiceActions invoiceId={inv.id} />
+                          <InvoiceActions invoiceId={inv.id} paid={inv.status === 'paid'} />
                         </div>
                       </td>
                     </tr>

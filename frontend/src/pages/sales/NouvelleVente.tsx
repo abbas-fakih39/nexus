@@ -309,7 +309,7 @@ export default function NouvelleVente() {
         title="Vente validée ✅"
         footer={
           <div className="flex w-full items-center justify-between gap-3">
-            {success?.invoiceId ? <InvoiceActions invoiceId={success.invoiceId} /> : <span />}
+            {success?.invoiceId ? <InvoiceActions invoiceId={success.invoiceId} paid /> : <span />}
             <Button onClick={() => setSuccess(null)}>Nouvelle vente</Button>
           </div>
         }

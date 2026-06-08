@@ -203,7 +203,7 @@ export default function SalesHistory() {
         footer={
           detail ? (
             <>
-              {detail.invoice && <InvoiceActions invoiceId={detail.invoice.id} />}
+              {detail.invoice && <InvoiceActions invoiceId={detail.invoice.id} paid={detail.invoice.status === 'paid'} />}
               <div className="ml-auto flex items-center gap-3">
                 {cancelError && <span className="text-[13px] text-danger">{cancelError}</span>}
                 <Button variant="secondary" onClick={() => setDetail(null)} disabled={cancelling}>

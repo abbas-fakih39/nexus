@@ -36,11 +36,11 @@ export const getInvoices = (params?: { type?: InvoiceType; status?: InvoiceStatu
 export const updateInvoiceStatus = (id: string, status: InvoiceStatus) =>
   api.patch<InvoiceSummary>(`/invoices/${id}/status`, { status }).then((r) => r.data);
 
-export type InvoicePdfFormat = 'a4' | 'receipt';
+export type InvoicePdfFormat = 'a4' | 'receipt' | 'payment';
 
 /** Récupère le PDF en blob (le token JWT passe via l'intercepteur axios) et l'ouvre dans un onglet. */
 export const openInvoicePdf = async (id: string, format: InvoicePdfFormat = 'a4') => {
-  const q = format === 'receipt' ? '?format=receipt' : '';
+  const q = format === 'a4' ? '' : `?format=${format}`;
   const res = await api.get(`/invoices/${id}/pdf${q}`, { responseType: 'blob' });
   const url = URL.createObjectURL(res.data as Blob);
   window.open(url, '_blank');
