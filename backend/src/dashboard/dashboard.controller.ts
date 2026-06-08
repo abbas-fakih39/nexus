@@ -33,6 +33,12 @@ export class DashboardController {
     return this.dash.categoryBreakdown(period);
   }
 
+  @Get('dormant-products')
+  @Roles('owner')
+  dormantProducts(@Query('period') period = '30d') {
+    return this.dash.dormantProducts(period);
+  }
+
   // Accessibles aussi à l'employé (son espace).
   @Get('low-stock')
   lowStock() {

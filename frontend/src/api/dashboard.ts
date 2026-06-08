@@ -12,6 +12,7 @@ export interface DashboardStats {
   purchasesTotal: number;
   stockValue: number;
   lowStockCount: number;
+  prev: { revenue: number; margin: number; salesCount: number };
 }
 
 export interface RevenuePoint {
@@ -64,6 +65,18 @@ export const getTopProducts = (period: Period) =>
 
 export const getCategoryBreakdown = (period: Period) =>
   api.get<CategorySlice[]>(`/dashboard/category-breakdown?period=${period}`).then((r) => r.data);
+
+export interface DormantProduct {
+  id: string;
+  name: string;
+  stock: number;
+  unit: string;
+  category?: { name: string } | null;
+  value: number;
+}
+
+export const getDormantProducts = (period: Period) =>
+  api.get<DormantProduct[]>(`/dashboard/dormant-products?period=${period}`).then((r) => r.data);
 
 export const getLowStock = () =>
   api.get<LowStockProduct[]>('/dashboard/low-stock').then((r) => r.data);

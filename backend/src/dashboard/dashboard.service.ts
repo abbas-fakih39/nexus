@@ -26,12 +26,10 @@ function periodFrom(period: string): Date {
 export class DashboardService {
   constructor(private prisma: PrismaService) {}
 
-  /** KPIs de la période : CA, marge, nb ventes, panier moyen, achats, valeur stock, alertes. */
-  async stats(period: string) {
-    const from = periodFrom(period);
-
+  /** Agrégat ventes (CA, marge, nb) sur un intervalle [gte, lt?). */
+  private async salesAgg(gte: Date, lt?: Date) {
     const sales = await this.prisma.sale.findMany({
-      where: { status: 'completed', createdAt: { gte: from } },
+      where: { status: 'completed', createdAt: { gte, ...(lt ? { lt } : {}) } },
       select: { finalAmount: true, items: { select: { unitCost: true, quantity: true } } },
     });
     let revenue = 0;
@@ -40,8 +38,16 @@ export class DashboardService {
       revenue += num(s.finalAmount);
       for (const it of s.items) cost += num(it.unitCost) * it.quantity;
     }
-    const margin = round2(revenue - cost);
-    const salesCount = sales.length;
+    return { revenue: round2(revenue), margin: round2(revenue - cost), salesCount: sales.length };
+  }
+
+  /** KPIs de la période + comparaison avec la période précédente de même durée. */
+  async stats(period: string) {
+    const now = new Date();
+    const from = periodFrom(period);
+    const prevFrom = new Date(from.getTime() - (now.getTime() - from.getTime()));
+
+    const [cur, prev] = await Promise.all([this.salesAgg(from), this.salesAgg(prevFrom, from)]);
 
     const purchasesAgg = await this.prisma.purchase.aggregate({
       _sum: { totalAmount: true },
@@ -56,15 +62,42 @@ export class DashboardService {
 
     return {
       period,
-      revenue: round2(revenue),
-      margin,
-      marginRate: revenue ? round2((margin / revenue) * 100) : 0,
-      salesCount,
-      avgBasket: salesCount ? round2(revenue / salesCount) : 0,
+      revenue: cur.revenue,
+      margin: cur.margin,
+      marginRate: cur.revenue ? round2((cur.margin / cur.revenue) * 100) : 0,
+      salesCount: cur.salesCount,
+      avgBasket: cur.salesCount ? round2(cur.revenue / cur.salesCount) : 0,
       purchasesTotal: round2(num(purchasesAgg._sum.totalAmount ?? 0)),
       stockValue: round2(stockValue),
       lowStockCount,
+      prev: { revenue: prev.revenue, margin: prev.margin, salesCount: prev.salesCount },
     };
+  }
+
+  /** Produits en stock mais sans aucune vente sur la période (surstock à écouler). */
+  async dormantProducts(period: string) {
+    const from = periodFrom(period);
+    const sold = await this.prisma.saleItem.findMany({
+      where: { sale: { status: 'completed', createdAt: { gte: from } } },
+      select: { productId: true },
+      distinct: ['productId'],
+    });
+    const soldIds = new Set(sold.map((s) => s.productId));
+    const products = await this.prisma.product.findMany({
+      where: { stock: { gt: 0 } },
+      include: { category: { select: { name: true } } },
+    });
+    return products
+      .filter((p) => !soldIds.has(p.id))
+      .map((p) => ({
+        id: p.id,
+        name: p.name,
+        stock: p.stock,
+        unit: p.unit,
+        category: p.category,
+        value: round2(num(p.costPrice) * p.stock),
+      }))
+      .sort((a, b) => b.value - a.value);
   }
 
   /** Série journalière (CA & achats) sur les `days` derniers jours. */
