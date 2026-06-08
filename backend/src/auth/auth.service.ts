@@ -35,6 +35,8 @@ export class AuthService {
     const valid = await bcrypt.compare(dto.password, user.password);
     if (!valid) throw new UnauthorizedException('Identifiants invalides');
 
+    if (!user.isActive) throw new UnauthorizedException('Compte désactivé. Contactez le gérant.');
+
     const token = this.signToken(user.id, user.email, user.role);
     return { token };
   }
