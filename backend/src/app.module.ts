@@ -22,7 +22,11 @@ import { SettingsModule } from './settings/settings.module';
 @Module({
   imports: [
     // Limite globale anti-abus : 120 requêtes / minute / IP.
-    ThrottlerModule.forRoot([{ ttl: 60000, limit: 120 }]),
+    // Désactivée en environnement de test (e2e) pour ne pas fausser les suites.
+    ThrottlerModule.forRoot({
+      throttlers: [{ ttl: 60000, limit: 120 }],
+      skipIf: () => process.env.NODE_ENV === 'test',
+    }),
     PrismaModule,
     AuthModule,
     UsersModule,
