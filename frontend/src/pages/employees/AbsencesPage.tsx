@@ -36,12 +36,14 @@ const TYPES: AbsenceType[] = ['paid_leave', 'unpaid_leave', 'sick', 'other'];
 interface FormState {
   employeeId: string;
   type: AbsenceType;
+  mode: 'single' | 'range';
+  date: string;
   startDate: string;
   endDate: string;
   reason: string;
   days: string;
 }
-const EMPTY: FormState = { employeeId: '', type: 'paid_leave', startDate: '', endDate: '', reason: '', days: '' };
+const EMPTY: FormState = { employeeId: '', type: 'paid_leave', mode: 'single', date: '', startDate: '', endDate: '', reason: '', days: '' };
 
 export default function AbsencesPage() {
   const [absences, setAbsences] = useState<Absence[]>([]);
@@ -93,14 +95,27 @@ export default function AbsencesPage() {
     e.preventDefault();
     setFormError(null);
     if (!form.employeeId) return setFormError('Sélectionnez un employé.');
-    if (!form.startDate || !form.endDate) return setFormError('Renseignez les dates.');
-    if (form.endDate < form.startDate) return setFormError('La date de fin doit être après le début.');
+
+    let startDate: string;
+    let endDate: string;
+    if (form.mode === 'single') {
+      if (!form.date) return setFormError('Renseignez la date.');
+      startDate = endDate = form.date;
+    } else {
+      if (!form.startDate || !form.endDate) return setFormError('Renseignez les dates.');
+      if (form.endDate < form.startDate) return setFormError('La date de fin doit être après le début.');
+      startDate = form.startDate;
+      endDate = form.endDate;
+    }
+    if (form.type === 'other' && !form.reason.trim()) {
+      return setFormError('Le motif est obligatoire pour une absence de type « Autre ».');
+    }
 
     const payload: CreateAbsenceInput = {
       employeeId: form.employeeId,
       type: form.type,
-      startDate: form.startDate,
-      endDate: form.endDate,
+      startDate,
+      endDate,
       reason: form.reason.trim() || undefined,
       days: form.days ? Number(form.days) : undefined,
     };
@@ -266,12 +281,28 @@ export default function AbsencesPage() {
               <option key={t} value={t}>{ABSENCE_TYPE_LABEL[t]}</option>
             ))}
           </Select>
-          <div className="grid grid-cols-2 gap-4">
-            <Input label="Du *" type="date" value={form.startDate} onChange={(e) => set('startDate', e.target.value)} />
-            <Input label="Au *" type="date" value={form.endDate} onChange={(e) => set('endDate', e.target.value)} />
+          <div>
+            <span className="mb-1.5 block text-[13px] font-semibold text-ink-soft">Durée</span>
+            <div className="flex gap-2">
+              <ModeButton active={form.mode === 'single'} onClick={() => set('mode', 'single')}>1 jour</ModeButton>
+              <ModeButton active={form.mode === 'range'} onClick={() => set('mode', 'range')}>Plusieurs jours</ModeButton>
+            </div>
           </div>
+          {form.mode === 'single' ? (
+            <Input label="Date *" type="date" value={form.date} onChange={(e) => set('date', e.target.value)} />
+          ) : (
+            <div className="grid grid-cols-2 gap-4">
+              <Input label="Du *" type="date" value={form.startDate} onChange={(e) => set('startDate', e.target.value)} />
+              <Input label="Au *" type="date" value={form.endDate} onChange={(e) => set('endDate', e.target.value)} />
+            </div>
+          )}
           <Input label="Jours (laisser vide = calcul auto des jours ouvrés)" type="number" min="0.5" step="0.5" value={form.days} onChange={(e) => set('days', e.target.value)} placeholder="Ex. 0.5 pour une demi-journée" />
-          <Input label="Motif" value={form.reason} onChange={(e) => set('reason', e.target.value)} placeholder="Optionnel" />
+          <Input
+            label={form.type === 'other' ? 'Motif *' : 'Motif'}
+            value={form.reason}
+            onChange={(e) => set('reason', e.target.value)}
+            placeholder={form.type === 'other' ? 'Obligatoire pour une absence « Autre »' : 'Optionnel'}
+          />
           <p className="text-[12px] text-ink-faint">Une absence saisie par le gérant est directement approuvée.</p>
         </form>
       </Modal>
@@ -294,6 +325,22 @@ export default function AbsencesPage() {
         </p>
       </Modal>
     </div>
+  );
+}
+
+function ModeButton({ active, onClick, children }: { active: boolean; onClick: () => void; children: React.ReactNode }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={`flex-1 rounded-xl border px-4 py-2.5 text-sm font-semibold transition ${
+        active
+          ? 'border-accent bg-accent text-white'
+          : 'border-border bg-canvas text-ink-mute hover:border-border-strong hover:text-ink'
+      }`}
+    >
+      {children}
+    </button>
   );
 }
 

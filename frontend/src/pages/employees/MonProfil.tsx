@@ -41,7 +41,14 @@ export default function MonProfil() {
   const [notFound, setNotFound] = useState(false);
 
   const [formOpen, setFormOpen] = useState(false);
-  const [form, setForm] = useState({ type: 'paid_leave' as AbsenceType, startDate: '', endDate: '', reason: '' });
+  const [form, setForm] = useState({
+    type: 'paid_leave' as AbsenceType,
+    mode: 'single' as 'single' | 'range',
+    date: '',
+    startDate: '',
+    endDate: '',
+    reason: '',
+  });
   const [saving, setSaving] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
 
@@ -60,7 +67,7 @@ export default function MonProfil() {
   }, []);
 
   function openRequest() {
-    setForm({ type: 'paid_leave', startDate: '', endDate: '', reason: '' });
+    setForm({ type: 'paid_leave', mode: 'single', date: '', startDate: '', endDate: '', reason: '' });
     setFormError(null);
     setFormOpen(true);
   }
@@ -68,14 +75,28 @@ export default function MonProfil() {
   async function submitRequest(e: FormEvent) {
     e.preventDefault();
     setFormError(null);
-    if (!form.startDate || !form.endDate) return setFormError('Renseignez les dates.');
-    if (form.endDate < form.startDate) return setFormError('La date de fin doit être après le début.');
+
+    let startDate: string;
+    let endDate: string;
+    if (form.mode === 'single') {
+      if (!form.date) return setFormError('Renseignez la date.');
+      startDate = endDate = form.date;
+    } else {
+      if (!form.startDate || !form.endDate) return setFormError('Renseignez les dates.');
+      if (form.endDate < form.startDate) return setFormError('La date de fin doit être après le début.');
+      startDate = form.startDate;
+      endDate = form.endDate;
+    }
+    if (form.type === 'other' && !form.reason.trim()) {
+      return setFormError('Le motif est obligatoire pour une absence de type « Autre ».');
+    }
+
     setSaving(true);
     try {
       await createAbsence({
         type: form.type,
-        startDate: form.startDate,
-        endDate: form.endDate,
+        startDate,
+        endDate,
         reason: form.reason.trim() || undefined,
       });
       setFormOpen(false);
@@ -255,15 +276,47 @@ export default function MonProfil() {
               <option key={t} value={t}>{ABSENCE_TYPE_LABEL[t]}</option>
             ))}
           </Select>
-          <div className="grid grid-cols-2 gap-4">
-            <Input label="Du *" type="date" value={form.startDate} onChange={(e) => setForm((f) => ({ ...f, startDate: e.target.value }))} />
-            <Input label="Au *" type="date" value={form.endDate} onChange={(e) => setForm((f) => ({ ...f, endDate: e.target.value }))} />
+          <div>
+            <span className="mb-1.5 block text-[13px] font-semibold text-ink-soft">Durée</span>
+            <div className="flex gap-2">
+              <ModeButton active={form.mode === 'single'} onClick={() => setForm((f) => ({ ...f, mode: 'single' }))}>1 jour</ModeButton>
+              <ModeButton active={form.mode === 'range'} onClick={() => setForm((f) => ({ ...f, mode: 'range' }))}>Plusieurs jours</ModeButton>
+            </div>
           </div>
-          <Input label="Motif" value={form.reason} onChange={(e) => setForm((f) => ({ ...f, reason: e.target.value }))} placeholder="Optionnel" />
+          {form.mode === 'single' ? (
+            <Input label="Date *" type="date" value={form.date} onChange={(e) => setForm((f) => ({ ...f, date: e.target.value }))} />
+          ) : (
+            <div className="grid grid-cols-2 gap-4">
+              <Input label="Du *" type="date" value={form.startDate} onChange={(e) => setForm((f) => ({ ...f, startDate: e.target.value }))} />
+              <Input label="Au *" type="date" value={form.endDate} onChange={(e) => setForm((f) => ({ ...f, endDate: e.target.value }))} />
+            </div>
+          )}
+          <Input
+            label={form.type === 'other' ? 'Motif *' : 'Motif'}
+            value={form.reason}
+            onChange={(e) => setForm((f) => ({ ...f, reason: e.target.value }))}
+            placeholder={form.type === 'other' ? 'Obligatoire pour une absence « Autre »' : 'Optionnel'}
+          />
           <p className="text-[12px] text-ink-faint">Votre demande sera transmise au gérant pour validation.</p>
         </form>
       </Modal>
     </div>
+  );
+}
+
+function ModeButton({ active, onClick, children }: { active: boolean; onClick: () => void; children: ReactNode }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={`flex-1 rounded-xl border px-4 py-2.5 text-sm font-semibold transition ${
+        active
+          ? 'border-accent bg-accent text-white'
+          : 'border-border bg-canvas text-ink-mute hover:border-border-strong hover:text-ink'
+      }`}
+    >
+      {children}
+    </button>
   );
 }
 
