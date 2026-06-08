@@ -1,21 +1,38 @@
 import { NavLink } from 'react-router-dom';
 import { useAuthStore } from '../../store/authStore';
+import { useSettingsStore } from '../../store/settingsStore';
 import { navForRole } from './navConfig';
+
+function monogram(name: string): string {
+  const parts = name.replace(/[^a-zA-ZÀ-ÿ ]/g, '').trim().split(/\s+/).filter(Boolean);
+  const letters = parts.slice(0, 2).map((w) => w[0]).join('');
+  return (letters || 'N').toUpperCase();
+}
 
 export default function Sidebar() {
   const user = useAuthStore((s) => s.user);
   const items = navForRole(user?.role ?? 'employee');
 
+  const settings = useSettingsStore((s) => s.settings);
+  const shopName = settings?.shopName || 'Nexus';
+  const logo = settings?.logoPath;
+
   return (
     <aside className="sticky top-0 flex h-screen flex-col overflow-hidden border-r border-white/10 bg-sidebar px-4 pb-5 pt-6 text-white">
-      {/* Marque boutique (nom + logo pilotables depuis Paramètres à terme) */}
+      {/* Marque boutique (nom + logo pilotés depuis Paramètres) */}
       <div className="flex items-center gap-3 px-2">
-        <div className="grid h-9 w-9 place-items-center rounded-xl bg-accent text-sm font-bold tracking-tight text-white shadow-sm">
-          AS
-        </div>
-        <div className="flex flex-col leading-none">
-          <span className="text-[17px] font-bold tracking-tight">Amrani Sport</span>
-          <span className="mt-1 text-[11.5px] font-medium text-white/50">Boutique Bastille</span>
+        {logo ? (
+          <img src={logo} alt={shopName} className="h-9 w-9 shrink-0 rounded-xl object-cover shadow-sm" />
+        ) : (
+          <div className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-accent text-sm font-bold tracking-tight text-white shadow-sm">
+            {monogram(shopName)}
+          </div>
+        )}
+        <div className="flex min-w-0 flex-col leading-none">
+          <span className="truncate text-[17px] font-bold tracking-tight">{shopName}</span>
+          {settings?.address && (
+            <span className="mt-1 truncate text-[11.5px] font-medium text-white/50">{settings.address}</span>
+          )}
         </div>
       </div>
 

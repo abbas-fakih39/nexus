@@ -18,6 +18,7 @@ import AchatsHistory from '../pages/purchases/AchatsHistory';
 import Factures from '../pages/invoices/Factures';
 import Dashboard from '../pages/dashboard/Dashboard';
 import MonEspace from '../pages/dashboard/MonEspace';
+import StoreSettings from '../pages/settings/StoreSettings';
 
 /** Redirige `/` vers l'accueil du rôle (le profil est garanti par PrivateRoute). */
 function RoleHome() {
@@ -45,7 +46,7 @@ export default function AppRoutes() {
             </Route>
             <Route path="factures" element={<Factures />} />
             <Route path="employes" element={<Placeholder />} />
-            <Route path="parametres" element={<Placeholder />} />
+            <Route path="parametres" element={<StoreSettings />} />
           </Route>
 
           {/* Employee uniquement */}
