@@ -20,6 +20,8 @@ import MonEspace from '../pages/dashboard/MonEspace';
 import EmployesLayout from '../pages/employees/EmployesLayout';
 import FichesEmployes from '../pages/employees/FichesEmployes';
 import SalairesPage from '../pages/employees/SalairesPage';
+import AbsencesPage from '../pages/employees/AbsencesPage';
+import PresencePage from '../pages/employees/PresencePage';
 import MonProfil from '../pages/employees/MonProfil';
 import ParametresLayout from '../pages/settings/ParametresLayout';
 import StoreSettings from '../pages/settings/StoreSettings';
@@ -52,6 +54,8 @@ export default function AppRoutes() {
             <Route path="factures" element={<Factures />} />
             <Route path="employes" element={<EmployesLayout />}>
               <Route index element={<FichesEmployes />} />
+              <Route path="absences" element={<AbsencesPage />} />
+              <Route path="presence" element={<PresencePage />} />
               <Route path="salaires" element={<SalairesPage />} />
             </Route>
             <Route path="parametres" element={<ParametresLayout />}>

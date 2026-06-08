@@ -27,6 +27,7 @@ interface FormState {
   jobTitle: string;
   baseSalary: string;
   hiredAt: string;
+  leaveQuota: string;
   userId: string;
 }
 
@@ -36,6 +37,7 @@ const EMPTY: FormState = {
   jobTitle: '',
   baseSalary: '',
   hiredAt: '',
+  leaveQuota: '25',
   userId: '',
 };
 
@@ -46,6 +48,7 @@ function toForm(e: Employee | null): FormState {
     jobTitle: e?.jobTitle ?? '',
     baseSalary: e ? String(e.baseSalary) : '',
     hiredAt: e ? e.hiredAt.slice(0, 10) : '',
+    leaveQuota: e ? String(e.leaveQuota) : '25',
     userId: e?.user?.id ?? '',
   };
 }
@@ -119,6 +122,8 @@ export default function FichesEmployes() {
     const salary = Number(form.baseSalary);
     if (!form.baseSalary || Number.isNaN(salary) || salary < 0) return setFormError('Salaire de base invalide.');
     if (!form.hiredAt) return setFormError("La date d'embauche est obligatoire.");
+    const quota = Number(form.leaveQuota);
+    if (form.leaveQuota === '' || !Number.isInteger(quota) || quota < 0) return setFormError('Quota de congés invalide.');
 
     const payload: EmployeeInput = {
       firstName: form.firstName.trim(),
@@ -126,6 +131,7 @@ export default function FichesEmployes() {
       jobTitle: form.jobTitle.trim(),
       baseSalary: salary,
       hiredAt: form.hiredAt,
+      leaveQuota: quota,
       userId: form.userId || null,
     };
 
@@ -183,6 +189,7 @@ export default function FichesEmployes() {
                 <th className="px-5 py-3">Poste</th>
                 <th className="px-5 py-3 text-right">Salaire de base</th>
                 <th className="px-5 py-3">Embauché le</th>
+                <th className="px-5 py-3 text-right">Congés restants</th>
                 <th className="px-5 py-3">Compte</th>
                 <th className="px-5 py-3 text-right">Paiements</th>
                 <th className="px-5 py-3 text-right">Actions</th>
@@ -195,6 +202,9 @@ export default function FichesEmployes() {
                   <td className="px-5 py-3 text-ink-soft">{e.jobTitle}</td>
                   <td className="px-5 py-3 text-right font-mono tabular-nums text-ink-soft">{formatEuro(e.baseSalary)}</td>
                   <td className="px-5 py-3 font-mono tabular-nums text-ink-mute">{formatDate(e.hiredAt)}</td>
+                  <td className="px-5 py-3 text-right font-mono tabular-nums text-ink-soft">
+                    {e.leaveBalance.remaining} / {e.leaveBalance.quota} j
+                  </td>
                   <td className="px-5 py-3">
                     {e.user ? (
                       <Badge tone={e.user.isActive ? 'success' : 'danger'}>
@@ -254,9 +264,10 @@ export default function FichesEmployes() {
             <Input label="Nom *" value={form.lastName} onChange={(e) => set('lastName', e.target.value)} placeholder="Benali" />
           </div>
           <Input label="Poste *" value={form.jobTitle} onChange={(e) => set('jobTitle', e.target.value)} placeholder="Caissier, Vendeur…" />
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
             <Input label="Salaire de base (€) *" type="number" min="0" step="0.01" value={form.baseSalary} onChange={(e) => set('baseSalary', e.target.value)} placeholder="1800" />
             <Input label="Date d'embauche *" type="date" value={form.hiredAt} onChange={(e) => set('hiredAt', e.target.value)} />
+            <Input label="Congés payés (j/an) *" type="number" min="0" step="1" value={form.leaveQuota} onChange={(e) => set('leaveQuota', e.target.value)} placeholder="25" />
           </div>
         </form>
       </Modal>

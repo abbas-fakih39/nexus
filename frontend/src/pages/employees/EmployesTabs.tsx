@@ -2,6 +2,8 @@ import { NavLink } from 'react-router-dom';
 
 const tabs = [
   { to: '/employes', label: 'Fiches', end: true },
+  { to: '/employes/absences', label: 'Absences', end: false },
+  { to: '/employes/presence', label: 'Retards & heures sup', end: false },
   { to: '/employes/salaires', label: 'Salaires', end: false },
 ];
 
