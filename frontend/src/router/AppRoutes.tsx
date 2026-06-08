@@ -16,6 +16,7 @@ import AchatsLayout from '../pages/purchases/AchatsLayout';
 import NouvelAchat from '../pages/purchases/NouvelAchat';
 import AchatsHistory from '../pages/purchases/AchatsHistory';
 import Factures from '../pages/invoices/Factures';
+import Dashboard from '../pages/dashboard/Dashboard';
 
 /** Redirige `/` vers l'accueil du rôle (le profil est garanti par PrivateRoute). */
 function RoleHome() {
@@ -36,7 +37,7 @@ export default function AppRoutes() {
 
           {/* Owner uniquement */}
           <Route element={<RoleRoute roles={['owner']} />}>
-            <Route path="dashboard" element={<Placeholder />} />
+            <Route path="dashboard" element={<Dashboard />} />
             <Route path="achats" element={<AchatsLayout />}>
               <Route index element={<NouvelAchat />} />
               <Route path="historique" element={<AchatsHistory />} />
