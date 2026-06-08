@@ -4,7 +4,6 @@ import PrivateRoute from './PrivateRoute';
 import RoleRoute, { homeForRole } from './RoleRoute';
 import AppLayout from '../components/layout/AppLayout';
 import Login from '../pages/auth/Login';
-import Placeholder from '../pages/Placeholder';
 import StockLayout from '../pages/stock/StockLayout';
 import Stock from '../pages/stock/Stock';
 import CategoriesPage from '../pages/stock/CategoriesPage';
@@ -18,6 +17,9 @@ import AchatsHistory from '../pages/purchases/AchatsHistory';
 import Factures from '../pages/invoices/Factures';
 import Dashboard from '../pages/dashboard/Dashboard';
 import MonEspace from '../pages/dashboard/MonEspace';
+import EmployesLayout from '../pages/employees/EmployesLayout';
+import FichesEmployes from '../pages/employees/FichesEmployes';
+import SalairesPage from '../pages/employees/SalairesPage';
 import ParametresLayout from '../pages/settings/ParametresLayout';
 import StoreSettings from '../pages/settings/StoreSettings';
 import Comptes from '../pages/settings/Comptes';
@@ -47,7 +49,10 @@ export default function AppRoutes() {
               <Route path="historique" element={<AchatsHistory />} />
             </Route>
             <Route path="factures" element={<Factures />} />
-            <Route path="employes" element={<Placeholder />} />
+            <Route path="employes" element={<EmployesLayout />}>
+              <Route index element={<FichesEmployes />} />
+              <Route path="salaires" element={<SalairesPage />} />
+            </Route>
             <Route path="parametres" element={<ParametresLayout />}>
               <Route index element={<StoreSettings />} />
               <Route path="comptes" element={<Comptes />} />
