@@ -1,5 +1,6 @@
 import type { Settings } from '@prisma/client';
 import type { InvoiceForPdf } from './invoice-pdf';
+import { logoBuffer } from './invoice-assets';
 
 const eur = new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR' });
 const money = (n: number) => eur.format(n);
@@ -79,8 +80,22 @@ export function buildPaymentReceipt(
       },
     });
   };
+  const image = (buf: Buffer, h = 42, gap = 6) => {
+    blocks.push({
+      h: h + gap,
+      draw: (y) => {
+        try {
+          doc.image(buf, M, y, { fit: [cw, h], align: 'center' });
+        } catch {
+          /* image illisible : on ignore */
+        }
+      },
+    });
+  };
 
   // En-tête boutique
+  const logo = logoBuffer(settings);
+  if (logo) image(logo);
   center(shop.name, 'Courier-Bold', 12);
   if (shop.address) center(shop.address, 'Courier', 7.5, MUTE, 1);
   if (shop.phone) center(`Tel ${shop.phone}`, 'Courier', 7.5, MUTE, 1);

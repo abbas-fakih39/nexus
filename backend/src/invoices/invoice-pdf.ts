@@ -1,4 +1,5 @@
 import type { Prisma, Settings } from '@prisma/client';
+import { logoBuffer } from './invoice-assets';
 
 /** Facture avec toutes ses relations (sortie de InvoicesService.findOne). */
 export type InvoiceForPdf = Prisma.InvoiceGetPayload<{
@@ -91,7 +92,18 @@ export function buildInvoicePdf(
 
   // ─── En-tête : émetteur (gauche) + méta facture (droite) ───
   const top = 50;
-  doc.font('Helvetica-Bold').fontSize(17).fillColor(C.ink).text(issuer.name, LEFT, top, { width: 300 });
+  let issuerY = top;
+  // Logo du magasin (uniquement quand le magasin est l'émetteur, c.-à-d. les ventes).
+  const logo = isSale ? logoBuffer(settings) : null;
+  if (logo) {
+    try {
+      doc.image(logo, LEFT, top, { fit: [46, 46] });
+      issuerY = top + 54;
+    } catch {
+      issuerY = top;
+    }
+  }
+  doc.font('Helvetica-Bold').fontSize(17).fillColor(C.ink).text(issuer.name, LEFT, issuerY, { width: 300 });
   doc.font('Helvetica').fontSize(9).fillColor(C.mute);
   for (const line of partyLines(issuer)) doc.text(line, LEFT, doc.y + 1, { width: 300 });
   const leftBottom = doc.y;

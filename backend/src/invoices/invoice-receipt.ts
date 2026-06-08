@@ -1,5 +1,6 @@
 import type { Settings } from '@prisma/client';
 import type { InvoiceForPdf } from './invoice-pdf';
+import { logoBuffer } from './invoice-assets';
 
 const eur = new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR' });
 const money = (n: number) => eur.format(n);
@@ -98,8 +99,22 @@ export function buildInvoiceReceipt(
       },
     });
   };
+  const image = (buf: Buffer, h = 42, gap = 6) => {
+    blocks.push({
+      h: h + gap,
+      draw: (y) => {
+        try {
+          doc.image(buf, M, y, { fit: [cw, h], align: 'center' });
+        } catch {
+          /* image illisible : on ignore */
+        }
+      },
+    });
+  };
 
   // ─── En-tête ───
+  const logo = isSale ? logoBuffer(settings) : null;
+  if (logo) image(logo);
   center(emitter.name, 'Courier-Bold', 12);
   if (emitter.address) center(emitter.address, 'Courier', 7.5, MUTE, 1);
   if (emitter.phone) center(`Tel ${emitter.phone}`, 'Courier', 7.5, MUTE, 1);
