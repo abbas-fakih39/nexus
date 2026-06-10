@@ -15,13 +15,17 @@ WORKDIR /app
 
 ENV NODE_ENV=production
 
-# Toutes les dépendances (prisma est en devDep, nécessaire pour migrate deploy)
+# Toutes les dépendances (prisma + ts-node en devDep, nécessaires pour migrate deploy)
 COPY package*.json ./
 RUN npm ci && npm cache clean --force
 
 # Client Prisma généré + schéma + migrations
 COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
 COPY prisma ./prisma
+
+# Config Prisma 7 (prisma.config.ts lit DATABASE_URL et pilote migrate deploy)
+COPY prisma.config.ts ./
+COPY tsconfig.json ./
 
 # Application compilée
 COPY --from=builder /app/dist ./dist
