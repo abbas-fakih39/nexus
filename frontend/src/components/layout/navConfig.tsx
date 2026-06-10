@@ -99,6 +99,7 @@ export function navForRole(role: Role): NavItem[] {
 
 /** Titre de page à partir du chemin courant (pour la Topbar et les placeholders). */
 export function titleForPath(pathname: string): string {
-  const match = [...OWNER_NAV, ...EMPLOYEE_NAV].find((i) => i.path === pathname);
+  const all = [...OWNER_NAV, ...EMPLOYEE_NAV].sort((a, b) => b.path.length - a.path.length);
+  const match = all.find((i) => pathname === i.path || pathname.startsWith(i.path + '/'));
   return match?.label ?? 'Nexus';
 }

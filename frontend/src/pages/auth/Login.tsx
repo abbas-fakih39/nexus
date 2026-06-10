@@ -105,7 +105,7 @@ export default function Login() {
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="vous@amrani-sport.fr"
+                  placeholder="votre@email.com"
                   className="h-11 w-full rounded-xl border border-border bg-canvas pl-11 pr-3 text-[15px] font-medium text-ink outline-none transition placeholder:font-normal placeholder:text-ink-faint hover:border-border-strong focus:border-accent focus:bg-surface focus:ring-4 focus:ring-accent/15"
                 />
               </div>
@@ -208,7 +208,7 @@ export default function Login() {
               </button>
               <button
                 type="button"
-                onClick={() => fillDemo('employe@nexus.fr', 'employe123')}
+                onClick={() => fillDemo('employe@nexus.fr', 'emp123')}
                 className="flex items-center gap-3 rounded-xl border border-border bg-surface p-3 text-left transition hover:border-border-strong hover:bg-canvas"
               >
                 <span className="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-accent-softer text-accent-deep">
