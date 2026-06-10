@@ -13,11 +13,12 @@ RUN npm run build
 FROM node:22-alpine AS production
 WORKDIR /app
 
-ENV NODE_ENV=production
-
-# Toutes les dépendances (prisma + ts-node en devDep, nécessaires pour migrate deploy)
+# Install ALL dependencies first (prisma, ts-node, typescript are in devDeps
+# but required for prisma migrate deploy with prisma.config.ts)
 COPY package*.json ./
 RUN npm ci && npm cache clean --force
+
+ENV NODE_ENV=production
 
 # Client Prisma généré + schéma + migrations
 COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
@@ -33,4 +34,4 @@ COPY --from=builder /app/dist ./dist
 EXPOSE 3000
 
 # Applique les migrations manquantes puis démarre l'app
-CMD ["sh", "-c", "npx prisma migrate deploy && node dist/main"]
+CMD ["sh", "-c", "npx prisma migrate deploy && node dist/src/main"]
