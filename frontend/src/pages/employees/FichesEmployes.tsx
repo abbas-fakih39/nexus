@@ -249,7 +249,7 @@ export default function FichesEmployes() {
             <div role="alert" className="rounded-xl border border-danger/30 bg-danger-soft px-4 py-3 text-sm font-medium text-danger">{formError}</div>
           )}
           <div>
-            <Select label="Compte de connexion (optionnel)" value={form.userId} onChange={(e) => onAccountChange(e.target.value)} autoFocus>
+            <Select label="Compte de connexion (optionnel)" value={form.userId} onChange={(e) => onAccountChange(e.target.value)}>
               <option value="">Aucun — saisir manuellement</option>
               {linkableAccounts.map((a) => (
                 <option key={a.id} value={a.id}>{a.name} · {a.email}</option>
