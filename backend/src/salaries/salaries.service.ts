@@ -9,7 +9,9 @@ import { CreateSalaryPaymentDto } from './dto/create-salary-payment.dto';
 
 /** Employé renvoyé avec chaque paiement (pour l'affichage de la liste). */
 const PAYMENT_INCLUDE = {
-  employee: { select: { id: true, firstName: true, lastName: true, jobTitle: true } },
+  employee: {
+    select: { id: true, firstName: true, lastName: true, jobTitle: true },
+  },
 } satisfies Prisma.SalaryPaymentInclude;
 
 @Injectable()

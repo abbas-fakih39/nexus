@@ -1,16 +1,16 @@
-import type { ReactNode } from 'react';
+import type { ReactNode } from "react";
 
-type Tone = 'success' | 'warn' | 'danger' | 'neutral';
+type Tone = "success" | "warn" | "danger" | "neutral";
 
 const tones: Record<Tone, string> = {
-  success: 'bg-accent-softer text-accent-deep',
-  warn: 'bg-warn-soft text-warn',
-  danger: 'bg-danger-soft text-danger',
-  neutral: 'bg-canvas text-ink-mute',
+  success: "bg-accent-softer text-accent-deep",
+  warn: "bg-warn-soft text-warn",
+  danger: "bg-danger-soft text-danger",
+  neutral: "bg-canvas text-ink-mute",
 };
 
 export default function Badge({
-  tone = 'neutral',
+  tone = "neutral",
   children,
 }: {
   tone?: Tone;

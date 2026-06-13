@@ -37,7 +37,9 @@ export class SalesService {
           where: { id: item.productId },
         });
         if (!product) {
-          throw new BadRequestException(`Produit introuvable (${item.productId})`);
+          throw new BadRequestException(
+            `Produit introuvable (${item.productId})`,
+          );
         }
         if (product.stock < item.quantity) {
           throw new BadRequestException(
@@ -129,7 +131,9 @@ export class SalesService {
       include: {
         items: {
           include: {
-            product: { select: { id: true, name: true, sku: true, unit: true } },
+            product: {
+              select: { id: true, name: true, sku: true, unit: true },
+            },
           },
         },
         soldBy: { select: { id: true, name: true } },

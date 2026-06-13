@@ -4,7 +4,9 @@ import { PrismaService } from '../prisma/prisma.service';
 import { CreateOvertimeDto } from './dto/create-overtime.dto';
 
 const OVERTIME_INCLUDE = {
-  employee: { select: { id: true, firstName: true, lastName: true, jobTitle: true } },
+  employee: {
+    select: { id: true, firstName: true, lastName: true, jobTitle: true },
+  },
 } satisfies Prisma.OvertimeInclude;
 
 @Injectable()
@@ -38,8 +40,12 @@ export class OvertimeService {
   }
 
   async remove(id: string) {
-    const overtime = await this.prisma.overtime.findUnique({ where: { id }, select: { id: true } });
-    if (!overtime) throw new NotFoundException('Heures supplémentaires introuvables');
+    const overtime = await this.prisma.overtime.findUnique({
+      where: { id },
+      select: { id: true },
+    });
+    if (!overtime)
+      throw new NotFoundException('Heures supplémentaires introuvables');
     await this.prisma.overtime.delete({ where: { id } });
     return { ok: true };
   }

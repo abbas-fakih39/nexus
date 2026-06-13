@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from "react";
 
 export interface Pagination<T> {
   page: number;
@@ -34,5 +34,12 @@ export function usePagination<T>(
     [items, current, pageSize],
   );
 
-  return { page: current, pageCount, pageItems, total: items.length, pageSize, setPage };
+  return {
+    page: current,
+    pageCount,
+    pageItems,
+    total: items.length,
+    pageSize,
+    setPage,
+  };
 }

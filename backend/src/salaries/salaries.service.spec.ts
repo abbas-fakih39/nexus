@@ -11,7 +11,10 @@ describe('SalariesService', () => {
   beforeEach(() => {
     prisma = {
       employee: { findUnique: jest.fn() },
-      salaryPayment: { findFirst: jest.fn(), create: jest.fn().mockResolvedValue({ id: 'pay1' }) },
+      salaryPayment: {
+        findFirst: jest.fn(),
+        create: jest.fn().mockResolvedValue({ id: 'pay1' }),
+      },
     };
     service = new SalariesService(prisma as never);
   });
@@ -27,7 +30,9 @@ describe('SalariesService', () => {
   it('400 si un paiement existe déjà pour cet employé ce mois-là', async () => {
     prisma.employee.findUnique.mockResolvedValue({ id: 'e1' });
     prisma.salaryPayment.findFirst.mockResolvedValue({ id: 'existing' });
-    await expect(service.create(dto)).rejects.toBeInstanceOf(BadRequestException);
+    await expect(service.create(dto)).rejects.toBeInstanceOf(
+      BadRequestException,
+    );
     expect(prisma.salaryPayment.create).not.toHaveBeenCalled();
   });
 
@@ -37,7 +42,12 @@ describe('SalariesService', () => {
     await service.create(dto);
     expect(prisma.salaryPayment.create).toHaveBeenCalledWith(
       expect.objectContaining({
-        data: expect.objectContaining({ employeeId: 'e1', amount: 1700, month: '2026-05', note: 'Mai' }),
+        data: expect.objectContaining({
+          employeeId: 'e1',
+          amount: 1700,
+          month: '2026-05',
+          note: 'Mai',
+        }),
       }),
     );
   });

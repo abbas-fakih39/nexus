@@ -1,4 +1,4 @@
-import api from './axios';
+import api from "./axios";
 
 export interface Supplier {
   id: string;
@@ -16,10 +16,10 @@ export interface SupplierInput {
 }
 
 export const getSuppliers = () =>
-  api.get<Supplier[]>('/suppliers').then((r) => r.data);
+  api.get<Supplier[]>("/suppliers").then((r) => r.data);
 
 export const createSupplier = (data: SupplierInput) =>
-  api.post<Supplier>('/suppliers', data).then((r) => r.data);
+  api.post<Supplier>("/suppliers", data).then((r) => r.data);
 
 export const updateSupplier = (id: string, data: Partial<SupplierInput>) =>
   api.patch<Supplier>(`/suppliers/${id}`, data).then((r) => r.data);

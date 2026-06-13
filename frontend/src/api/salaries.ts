@@ -1,4 +1,4 @@
-import api from './axios';
+import api from "./axios";
 
 export interface SalaryPayment {
   id: string;
@@ -22,7 +22,7 @@ export interface SalaryPaymentInput {
 }
 
 export const getSalaryPayments = () =>
-  api.get<SalaryPayment[]>('/salary-payments').then((r) => r.data);
+  api.get<SalaryPayment[]>("/salary-payments").then((r) => r.data);
 
 export const createSalaryPayment = (data: SalaryPaymentInput) =>
-  api.post<SalaryPayment>('/salary-payments', data).then((r) => r.data);
+  api.post<SalaryPayment>("/salary-payments", data).then((r) => r.data);

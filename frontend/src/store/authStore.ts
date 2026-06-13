@@ -1,7 +1,7 @@
-import { create } from 'zustand';
-import { TOKEN_KEY } from '../api/axios';
+import { create } from "zustand";
+import { TOKEN_KEY } from "../api/axios";
 
-export type Role = 'owner' | 'employee';
+export type Role = "owner" | "employee";
 
 /** Utilisateur connecté, tel que renvoyé par `GET /auth/me` (sans le mot de passe). */
 export interface User {

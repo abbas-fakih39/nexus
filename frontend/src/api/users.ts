@@ -1,5 +1,5 @@
-import api from './axios';
-import type { Role } from '../store/authStore';
+import api from "./axios";
+import type { Role } from "../store/authStore";
 
 /** Compte tel que renvoyé par POST/PATCH (sans détail d'activité). */
 export interface AccountBase {
@@ -23,12 +23,16 @@ export interface CreateAccountInput {
   password: string;
 }
 
-export const getAccounts = () => api.get<Account[]>('/users').then((r) => r.data);
+export const getAccounts = () =>
+  api.get<Account[]>("/users").then((r) => r.data);
 
 export const createAccount = (data: CreateAccountInput) =>
-  api.post<AccountBase>('/users', data).then((r) => r.data);
+  api.post<AccountBase>("/users", data).then((r) => r.data);
 
 export const setAccountActive = (id: string, isActive: boolean) =>
-  api.patch<AccountBase>(`/users/${id}/active`, { isActive }).then((r) => r.data);
+  api
+    .patch<AccountBase>(`/users/${id}/active`, { isActive })
+    .then((r) => r.data);
 
-export const deleteAccount = (id: string) => api.delete(`/users/${id}`).then((r) => r.data);
+export const deleteAccount = (id: string) =>
+  api.delete(`/users/${id}`).then((r) => r.data);

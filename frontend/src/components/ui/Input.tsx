@@ -1,4 +1,9 @@
-import { forwardRef, useId, type InputHTMLAttributes, type ReactNode } from 'react';
+import {
+  forwardRef,
+  useId,
+  type InputHTMLAttributes,
+  type ReactNode,
+} from "react";
 
 interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
   label?: string;
@@ -7,7 +12,7 @@ interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
 }
 
 const Input = forwardRef<HTMLInputElement, InputProps>(
-  ({ label, error, icon, id, className = '', ...rest }, ref) => {
+  ({ label, error, icon, id, className = "", ...rest }, ref) => {
     // Associe systématiquement le label au champ, même si aucun id n'est fourni.
     const autoId = useId();
     const inputId = id ?? autoId;
@@ -15,7 +20,10 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
     return (
       <div>
         {label && (
-          <label htmlFor={inputId} className="mb-1.5 block text-[13px] font-semibold text-ink-soft">
+          <label
+            htmlFor={inputId}
+            className="mb-1.5 block text-[13px] font-semibold text-ink-soft"
+          >
             {label}
           </label>
         )}
@@ -31,20 +39,24 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
             aria-invalid={error ? true : undefined}
             aria-describedby={errorId}
             className={`h-11 w-full rounded-xl border bg-canvas px-3 text-[15px] font-medium text-ink outline-none transition placeholder:font-normal placeholder:text-ink-mute hover:border-border-strong focus:bg-surface focus:ring-4 ${
-              icon ? 'pl-11' : ''
+              icon ? "pl-11" : ""
             } ${
               error
-                ? 'border-danger focus:border-danger focus:ring-danger/15'
-                : 'border-border focus:border-accent focus:ring-accent/15'
+                ? "border-danger focus:border-danger focus:ring-danger/15"
+                : "border-border focus:border-accent focus:ring-accent/15"
             } ${className}`}
             {...rest}
           />
         </div>
-        {error && <p id={errorId} className="mt-1 text-[12px] font-medium text-danger">{error}</p>}
+        {error && (
+          <p id={errorId} className="mt-1 text-[12px] font-medium text-danger">
+            {error}
+          </p>
+        )}
       </div>
     );
   },
 );
 
-Input.displayName = 'Input';
+Input.displayName = "Input";
 export default Input;

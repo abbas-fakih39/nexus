@@ -1,4 +1,10 @@
-import { IsEmail, IsOptional, IsString, MaxLength, ValidateIf } from 'class-validator';
+import {
+  IsEmail,
+  IsOptional,
+  IsString,
+  MaxLength,
+  ValidateIf,
+} from 'class-validator';
 
 export class UpdateSettingsDto {
   @IsOptional()
@@ -17,7 +23,7 @@ export class UpdateSettingsDto {
   phone?: string;
 
   @IsOptional()
-  @ValidateIf((o) => o.email !== '' && o.email != null)
+  @ValidateIf((o: UpdateSettingsDto) => o.email !== '' && o.email != null)
   @IsEmail({}, { message: 'Email invalide.' })
   email?: string;
 

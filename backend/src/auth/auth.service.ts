@@ -1,4 +1,8 @@
-import { BadRequestException, Injectable, UnauthorizedException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import { UsersService } from '../users/users.service';
@@ -35,7 +39,8 @@ export class AuthService {
     const valid = await bcrypt.compare(dto.password, user.password);
     if (!valid) throw new UnauthorizedException('Identifiants invalides');
 
-    if (!user.isActive) throw new UnauthorizedException('Compte désactivé. Contactez le gérant.');
+    if (!user.isActive)
+      throw new UnauthorizedException('Compte désactivé. Contactez le gérant.');
 
     const token = this.signToken(user.id, user.email, user.role);
     return { token };

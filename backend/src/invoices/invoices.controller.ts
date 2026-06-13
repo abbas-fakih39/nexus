@@ -43,9 +43,13 @@ export class InvoicesController {
     const settings = await this.invoices.findSettings();
     const isTicket = format === 'receipt' || format === 'payment';
 
-    const suffix = format === 'receipt' ? '-ticket' : format === 'payment' ? '-recu' : '';
+    const suffix =
+      format === 'receipt' ? '-ticket' : format === 'payment' ? '-recu' : '';
     res.setHeader('Content-Type', 'application/pdf');
-    res.setHeader('Content-Disposition', `inline; filename="${invoice.number}${suffix}.pdf"`);
+    res.setHeader(
+      'Content-Disposition',
+      `inline; filename="${invoice.number}${suffix}.pdf"`,
+    );
 
     const doc = isTicket
       ? new PDFDocument({ autoFirstPage: false })

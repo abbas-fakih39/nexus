@@ -1,4 +1,4 @@
-import { useEffect, useId, useRef, type ReactNode } from 'react';
+import { useEffect, useId, useRef, type ReactNode } from "react";
 
 interface ModalProps {
   open: boolean;
@@ -6,7 +6,7 @@ interface ModalProps {
   title?: string;
   children: ReactNode;
   footer?: ReactNode;
-  size?: 'md' | 'lg';
+  size?: "md" | "lg";
 }
 
 const FOCUSABLE =
@@ -18,7 +18,7 @@ export default function Modal({
   title,
   children,
   footer,
-  size = 'md',
+  size = "md",
 }: ModalProps) {
   const panelRef = useRef<HTMLDivElement>(null);
   const titleId = useId();
@@ -33,13 +33,15 @@ export default function Modal({
     if (panel && !panel.contains(document.activeElement)) panel.focus();
 
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
+      if (e.key === "Escape") {
         onClose();
         return;
       }
       // Piège de focus : Tab/Maj+Tab boucle à l'intérieur de la modale.
-      if (e.key === 'Tab' && panel) {
-        const items = Array.from(panel.querySelectorAll<HTMLElement>(FOCUSABLE));
+      if (e.key === "Tab" && panel) {
+        const items = Array.from(
+          panel.querySelectorAll<HTMLElement>(FOCUSABLE),
+        );
         if (items.length === 0) return;
         const first = items[0];
         const last = items[items.length - 1];
@@ -53,11 +55,11 @@ export default function Modal({
       }
     };
 
-    document.addEventListener('keydown', onKey);
-    document.body.style.overflow = 'hidden';
+    document.addEventListener("keydown", onKey);
+    document.body.style.overflow = "hidden";
     return () => {
-      document.removeEventListener('keydown', onKey);
-      document.body.style.overflow = '';
+      document.removeEventListener("keydown", onKey);
+      document.body.style.overflow = "";
       // Restaure le focus sur l'élément déclencheur (bouton qui a ouvert la modale).
       previouslyFocused?.focus?.();
     };
@@ -68,7 +70,10 @@ export default function Modal({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       {/* Fond cliquable pour fermer */}
-      <div className="absolute inset-0 bg-ink/40 backdrop-blur-[2px]" onClick={onClose} />
+      <div
+        className="absolute inset-0 bg-ink/40 backdrop-blur-[2px]"
+        onClick={onClose}
+      />
 
       <div
         ref={panelRef}
@@ -77,19 +82,32 @@ export default function Modal({
         aria-modal="true"
         aria-labelledby={title ? titleId : undefined}
         className={`relative z-10 max-h-[90vh] w-full overflow-y-auto rounded-2xl border border-border bg-surface shadow-xl outline-none ${
-          size === 'lg' ? 'max-w-2xl' : 'max-w-md'
+          size === "lg" ? "max-w-2xl" : "max-w-md"
         }`}
       >
         {title && (
           <div className="flex items-center justify-between border-b border-border px-6 py-4">
-            <h2 id={titleId} className="text-lg font-bold tracking-tight text-ink">{title}</h2>
+            <h2
+              id={titleId}
+              className="text-lg font-bold tracking-tight text-ink"
+            >
+              {title}
+            </h2>
             <button
               type="button"
               onClick={onClose}
               aria-label="Fermer"
               className="grid h-8 w-8 place-items-center rounded-lg text-ink-faint transition hover:bg-canvas hover:text-ink"
             >
-              <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <svg
+                className="h-5 w-5"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
                 <line x1="18" y1="6" x2="6" y2="18" />
                 <line x1="6" y1="6" x2="18" y2="18" />
               </svg>

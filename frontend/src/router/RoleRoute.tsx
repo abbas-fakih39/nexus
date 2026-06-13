@@ -1,10 +1,6 @@
-import { Navigate, Outlet } from 'react-router-dom';
-import { useAuthStore, type Role } from '../store/authStore';
-
-/** Route d'accueil par défaut d'un rôle (post-login + redirection si rôle insuffisant). */
-export function homeForRole(role: Role): string {
-  return role === 'owner' ? '/dashboard' : '/mon-espace';
-}
+import { Navigate, Outlet } from "react-router-dom";
+import { useAuthStore } from "../store/authStore";
+import { homeForRole } from "./routerUtils";
 
 interface RoleRouteProps {
   /** Rôles autorisés à accéder aux routes enfants. */

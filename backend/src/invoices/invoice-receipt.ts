@@ -2,9 +2,12 @@ import type { Settings } from '@prisma/client';
 import type { InvoiceForPdf } from './invoice-pdf';
 import { logoBuffer } from './invoice-assets';
 
-const eur = new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR' });
+const eur = new Intl.NumberFormat('fr-FR', {
+  style: 'currency',
+  currency: 'EUR',
+});
 const money = (n: number) => eur.format(n);
-const num = (v: unknown) => Number(v as number);
+const num = (v: unknown) => Number(v);
 const dateFr = (d: Date) =>
   new Intl.DateTimeFormat('fr-FR', {
     day: '2-digit',
@@ -63,23 +66,52 @@ export function buildInvoiceReceipt(
   type Block = { h: number; draw: (y: number) => void };
   const blocks: Block[] = [];
 
-  const center = (text: string, font: string, size: number, color = INK, gap = 2) => {
+  const center = (
+    text: string,
+    font: string,
+    size: number,
+    color = INK,
+    gap = 2,
+  ) => {
     doc.font(font).fontSize(size);
     const h = doc.heightOfString(text, { width: cw, align: 'center' }) + gap;
     blocks.push({
       h,
-      draw: (y) => doc.font(font).fontSize(size).fillColor(color).text(text, M, y, { width: cw, align: 'center' }),
+      draw: (y) =>
+        doc
+          .font(font)
+          .fontSize(size)
+          .fillColor(color)
+          .text(text, M, y, { width: cw, align: 'center' }),
     });
   };
-  const left = (text: string, font: string, size: number, color = INK, gap = 2) => {
+  const left = (
+    text: string,
+    font: string,
+    size: number,
+    color = INK,
+    gap = 2,
+  ) => {
     doc.font(font).fontSize(size);
     const h = doc.heightOfString(text, { width: cw }) + gap;
     blocks.push({
       h,
-      draw: (y) => doc.font(font).fontSize(size).fillColor(color).text(text, M, y, { width: cw }),
+      draw: (y) =>
+        doc
+          .font(font)
+          .fontSize(size)
+          .fillColor(color)
+          .text(text, M, y, { width: cw }),
     });
   };
-  const row = (l: string, r: string, font: string, size: number, color = INK, gap = 2) => {
+  const row = (
+    l: string,
+    r: string,
+    font: string,
+    size: number,
+    color = INK,
+    gap = 2,
+  ) => {
     blocks.push({
       h: size + gap + 2,
       draw: (y) => {
@@ -94,7 +126,12 @@ export function buildInvoiceReceipt(
       h: 6 + gap,
       draw: (y) => {
         doc.save().dash(1.5, { space: 1.5 });
-        doc.moveTo(M, y + 3).lineTo(W - M, y + 3).lineWidth(0.5).strokeColor('#999999').stroke();
+        doc
+          .moveTo(M, y + 3)
+          .lineTo(W - M, y + 3)
+          .lineWidth(0.5)
+          .strokeColor('#999999')
+          .stroke();
         doc.undash().restore();
       },
     });
@@ -118,12 +155,14 @@ export function buildInvoiceReceipt(
   center(emitter.name, 'Courier-Bold', 12);
   if (emitter.address) center(emitter.address, 'Courier', 7.5, MUTE, 1);
   if (emitter.phone) center(`Tel ${emitter.phone}`, 'Courier', 7.5, MUTE, 1);
-  if (isSale && shop.siret) center(`SIRET ${shop.siret}`, 'Courier', 7, MUTE, 1);
+  if (isSale && shop.siret)
+    center(`SIRET ${shop.siret}`, 'Courier', 7, MUTE, 1);
   divider();
   center(isSale ? 'TICKET DE CAISSE' : 'BON DE RECEPTION', 'Courier-Bold', 9);
   center(`No ${invoice.number}`, 'Courier', 8, MUTE, 1);
   center(dateFr(invoice.createdAt), 'Courier', 7.5, MUTE, 1);
-  if (isSale && invoice.sale?.clientName) center(`Client : ${invoice.sale.clientName}`, 'Courier', 7.5, MUTE, 1);
+  if (isSale && invoice.sale?.clientName)
+    center(`Client : ${invoice.sale.clientName}`, 'Courier', 7.5, MUTE, 1);
   divider();
 
   // ─── Lignes ───
@@ -143,22 +182,51 @@ export function buildInvoiceReceipt(
       row(`Remise ${rem}%`, `- ${money(sub - fin)}`, 'Courier', 8, MUTE);
     }
     row('TOTAL', money(fin), 'Courier-Bold', 12, INK, 3);
-    if (invoice.sale) row('Reglement', PAYMENT_LABEL[invoice.sale.paymentMethod] ?? invoice.sale.paymentMethod, 'Courier', 8, MUTE);
+    if (invoice.sale)
+      row(
+        'Reglement',
+        PAYMENT_LABEL[invoice.sale.paymentMethod] ?? invoice.sale.paymentMethod,
+        'Courier',
+        8,
+        MUTE,
+      );
   } else {
-    row('TOTAL HT', money(num(invoice.purchase?.totalAmount)), 'Courier-Bold', 12, INK, 3);
+    row(
+      'TOTAL HT',
+      money(num(invoice.purchase?.totalAmount)),
+      'Courier-Bold',
+      12,
+      INK,
+      3,
+    );
   }
   if (invoice.status !== 'paid') {
-    center(`* ${STATUS_LABEL[invoice.status]} *`, 'Courier-Bold', 9, invoice.status === 'cancelled' ? '#CC0000' : '#B45309', 3);
+    center(
+      `* ${STATUS_LABEL[invoice.status]} *`,
+      'Courier-Bold',
+      9,
+      invoice.status === 'cancelled' ? '#CC0000' : '#B45309',
+      3,
+    );
   }
   divider();
 
   // ─── Pied ───
-  center(isSale ? 'Merci de votre visite !' : 'Document interne', 'Courier-Bold', 8, INK, 2);
+  center(
+    isSale ? 'Merci de votre visite !' : 'Document interne',
+    'Courier-Bold',
+    8,
+    INK,
+    2,
+  );
   center('TVA non applicable, art. 293 B du CGI', 'Courier', 6.5, MUTE, 1);
 
   // ─── Page à la hauteur exacte ───
   const H = PAD_TOP + PAD_BOT + blocks.reduce((s, b) => s + b.h, 0);
-  doc.addPage({ size: [W, H], margins: { top: PAD_TOP, bottom: PAD_BOT, left: M, right: M } });
+  doc.addPage({
+    size: [W, H],
+    margins: { top: PAD_TOP, bottom: PAD_BOT, left: M, right: M },
+  });
   let y = PAD_TOP;
   for (const b of blocks) {
     b.draw(y);

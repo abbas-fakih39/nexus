@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useState, type FormEvent } from 'react';
-import { useAuthStore } from '../../store/authStore';
+import { useEffect, useMemo, useState, type FormEvent } from "react";
+import { useAuthStore } from "../../store/authStore";
 import {
   getSuppliers,
   createSupplier,
@@ -7,16 +7,17 @@ import {
   deleteSupplier,
   type Supplier,
   type SupplierInput,
-} from '../../api/suppliers';
-import { getProducts, type Product } from '../../api/products';
-import Button from '../../components/ui/Button';
-import Input from '../../components/ui/Input';
-import Modal from '../../components/ui/Modal';
-import Spinner from '../../components/ui/Spinner';
+} from "../../api/suppliers";
+import { getProducts, type Product } from "../../api/products";
+import Button from "../../components/ui/Button";
+import Input from "../../components/ui/Input";
+import Modal from "../../components/ui/Modal";
+import Spinner from "../../components/ui/Spinner";
 
 function apiError(err: unknown, fallback: string): string {
-  const m = (err as { response?: { data?: { message?: string | string[] } } })?.response?.data?.message;
-  return Array.isArray(m) ? m.join(', ') : (m ?? fallback);
+  const m = (err as { response?: { data?: { message?: string | string[] } } })
+    ?.response?.data?.message;
+  return Array.isArray(m) ? m.join(", ") : (m ?? fallback);
 }
 
 interface FormState {
@@ -26,19 +27,19 @@ interface FormState {
   address: string;
 }
 
-const EMPTY: FormState = { name: '', email: '', phone: '', address: '' };
+const EMPTY: FormState = { name: "", email: "", phone: "", address: "" };
 
 function toForm(s: Supplier | null): FormState {
   return {
-    name: s?.name ?? '',
-    email: s?.email ?? '',
-    phone: s?.phone ?? '',
-    address: s?.address ?? '',
+    name: s?.name ?? "",
+    email: s?.email ?? "",
+    phone: s?.phone ?? "",
+    address: s?.address ?? "",
   };
 }
 
 export default function SuppliersPage() {
-  const canManage = useAuthStore((s) => s.user?.role === 'owner');
+  const canManage = useAuthStore((s) => s.user?.role === "owner");
 
   const [suppliers, setSuppliers] = useState<Supplier[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
@@ -66,7 +67,8 @@ export default function SuppliersPage() {
 
   const countBySupplier = useMemo(() => {
     const map: Record<string, number> = {};
-    for (const p of products) if (p.supplierId) map[p.supplierId] = (map[p.supplierId] ?? 0) + 1;
+    for (const p of products)
+      if (p.supplierId) map[p.supplierId] = (map[p.supplierId] ?? 0) + 1;
     return map;
   }, [products]);
 
@@ -83,12 +85,13 @@ export default function SuppliersPage() {
     setFormOpen(true);
   }
 
-  const set = (key: keyof FormState, value: string) => setForm((f) => ({ ...f, [key]: value }));
+  const set = (key: keyof FormState, value: string) =>
+    setForm((f) => ({ ...f, [key]: value }));
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
     setFormError(null);
-    if (!form.name.trim()) return setFormError('Le nom est obligatoire.');
+    if (!form.name.trim()) return setFormError("Le nom est obligatoire.");
 
     const payload: SupplierInput = {
       name: form.name.trim(),
@@ -119,7 +122,7 @@ export default function SuppliersPage() {
       setDeleteTarget(null);
       await reload();
     } catch (err) {
-      setDeleteError(apiError(err, 'Suppression impossible.'));
+      setDeleteError(apiError(err, "Suppression impossible."));
     } finally {
       setDeleting(false);
     }
@@ -137,7 +140,9 @@ export default function SuppliersPage() {
     <div className="flex flex-col gap-5">
       {canManage && (
         <div className="flex justify-end">
-          <Button onClick={openAdd} icon={<PlusIcon />}>Ajouter un fournisseur</Button>
+          <Button onClick={openAdd} icon={<PlusIcon />}>
+            Ajouter un fournisseur
+          </Button>
         </div>
       )}
 
@@ -155,16 +160,37 @@ export default function SuppliersPage() {
             </thead>
             <tbody>
               {suppliers.map((s) => (
-                <tr key={s.id} className="border-b border-border last:border-0 hover:bg-canvas">
+                <tr
+                  key={s.id}
+                  className="border-b border-border last:border-0 hover:bg-canvas"
+                >
                   <td className="px-5 py-3 font-semibold text-ink">{s.name}</td>
-                  <td className="px-5 py-3 text-ink-soft">{s.email ?? '—'}</td>
-                  <td className="px-5 py-3 font-mono tabular-nums text-ink-soft">{s.phone ?? '—'}</td>
-                  <td className="px-5 py-3 text-right font-mono tabular-nums text-ink-mute">{countBySupplier[s.id] ?? 0}</td>
+                  <td className="px-5 py-3 text-ink-soft">{s.email ?? "—"}</td>
+                  <td className="px-5 py-3 font-mono tabular-nums text-ink-soft">
+                    {s.phone ?? "—"}
+                  </td>
+                  <td className="px-5 py-3 text-right font-mono tabular-nums text-ink-mute">
+                    {countBySupplier[s.id] ?? 0}
+                  </td>
                   {canManage && (
                     <td className="px-5 py-3">
                       <div className="flex justify-end gap-1">
-                        <IconButton label="Modifier" onClick={() => openEdit(s)}><PencilIcon /></IconButton>
-                        <IconButton label="Supprimer" danger onClick={() => { setDeleteError(null); setDeleteTarget(s); }}><TrashIcon /></IconButton>
+                        <IconButton
+                          label="Modifier"
+                          onClick={() => openEdit(s)}
+                        >
+                          <PencilIcon />
+                        </IconButton>
+                        <IconButton
+                          label="Supprimer"
+                          danger
+                          onClick={() => {
+                            setDeleteError(null);
+                            setDeleteTarget(s);
+                          }}
+                        >
+                          <TrashIcon />
+                        </IconButton>
                       </div>
                     </td>
                   )}
@@ -174,7 +200,9 @@ export default function SuppliersPage() {
           </table>
         </div>
         {suppliers.length === 0 && (
-          <div className="px-5 py-14 text-center text-sm text-ink-mute">Aucun fournisseur.</div>
+          <div className="px-5 py-14 text-center text-sm text-ink-mute">
+            Aucun fournisseur.
+          </div>
         )}
       </div>
 
@@ -182,24 +210,63 @@ export default function SuppliersPage() {
       <Modal
         open={formOpen}
         onClose={() => setFormOpen(false)}
-        title={editing ? 'Modifier le fournisseur' : 'Ajouter un fournisseur'}
+        title={editing ? "Modifier le fournisseur" : "Ajouter un fournisseur"}
         footer={
           <>
-            <Button variant="secondary" onClick={() => setFormOpen(false)} disabled={saving}>Annuler</Button>
-            <Button type="submit" form="supplier-form" loading={saving}>{editing ? 'Enregistrer' : 'Ajouter'}</Button>
+            <Button
+              variant="secondary"
+              onClick={() => setFormOpen(false)}
+              disabled={saving}
+            >
+              Annuler
+            </Button>
+            <Button type="submit" form="supplier-form" loading={saving}>
+              {editing ? "Enregistrer" : "Ajouter"}
+            </Button>
           </>
         }
       >
-        <form id="supplier-form" onSubmit={handleSubmit} className="flex flex-col gap-4">
+        <form
+          id="supplier-form"
+          onSubmit={handleSubmit}
+          className="flex flex-col gap-4"
+        >
           {formError && (
-            <div role="alert" className="rounded-xl border border-danger/30 bg-danger-soft px-4 py-3 text-sm font-medium text-danger">{formError}</div>
+            <div
+              role="alert"
+              className="rounded-xl border border-danger/30 bg-danger-soft px-4 py-3 text-sm font-medium text-danger"
+            >
+              {formError}
+            </div>
           )}
-          <Input label="Nom *" value={form.name} onChange={(e) => set('name', e.target.value)} placeholder="Ex. Nike France" autoFocus />
+          <Input
+            label="Nom *"
+            value={form.name}
+            onChange={(e) => set("name", e.target.value)}
+            placeholder="Ex. Nike France"
+            autoFocus
+          />
           <div className="grid grid-cols-2 gap-4">
-            <Input label="Email" type="email" value={form.email} onChange={(e) => set('email', e.target.value)} placeholder="pro@nike.fr" />
-            <Input label="Téléphone" value={form.phone} onChange={(e) => set('phone', e.target.value)} placeholder="+33 1 40 00 10 10" />
+            <Input
+              label="Email"
+              type="email"
+              value={form.email}
+              onChange={(e) => set("email", e.target.value)}
+              placeholder="pro@nike.fr"
+            />
+            <Input
+              label="Téléphone"
+              value={form.phone}
+              onChange={(e) => set("phone", e.target.value)}
+              placeholder="+33 1 40 00 10 10"
+            />
           </div>
-          <Input label="Adresse" value={form.address} onChange={(e) => set('address', e.target.value)} placeholder="Rue, code postal, ville" />
+          <Input
+            label="Adresse"
+            value={form.address}
+            onChange={(e) => set("address", e.target.value)}
+            placeholder="Rue, code postal, ville"
+          />
         </form>
       </Modal>
 
@@ -210,37 +277,98 @@ export default function SuppliersPage() {
         title="Supprimer le fournisseur"
         footer={
           <>
-            <Button variant="secondary" onClick={() => setDeleteTarget(null)} disabled={deleting}>Annuler</Button>
-            <Button variant="danger" onClick={confirmDelete} loading={deleting}>Supprimer</Button>
+            <Button
+              variant="secondary"
+              onClick={() => setDeleteTarget(null)}
+              disabled={deleting}
+            >
+              Annuler
+            </Button>
+            <Button variant="danger" onClick={confirmDelete} loading={deleting}>
+              Supprimer
+            </Button>
           </>
         }
       >
         {deleteError && (
-          <div role="alert" className="mb-3 rounded-xl border border-danger/30 bg-danger-soft px-4 py-3 text-sm font-medium text-danger">{deleteError}</div>
+          <div
+            role="alert"
+            className="mb-3 rounded-xl border border-danger/30 bg-danger-soft px-4 py-3 text-sm font-medium text-danger"
+          >
+            {deleteError}
+          </div>
         )}
         <p className="text-sm text-ink-soft">
-          Confirmer la suppression de <span className="font-semibold text-ink">{deleteTarget?.name}</span> ?
+          Confirmer la suppression de{" "}
+          <span className="font-semibold text-ink">{deleteTarget?.name}</span> ?
         </p>
       </Modal>
     </div>
   );
 }
 
-function IconButton({ children, onClick, label, danger }: { children: React.ReactNode; onClick: () => void; label: string; danger?: boolean }) {
+function IconButton({
+  children,
+  onClick,
+  label,
+  danger,
+}: {
+  children: React.ReactNode;
+  onClick: () => void;
+  label: string;
+  danger?: boolean;
+}) {
   return (
-    <button type="button" onClick={onClick} aria-label={label}
-      className={`grid h-8 w-8 place-items-center rounded-lg text-ink-faint transition hover:bg-canvas ${danger ? 'hover:text-danger' : 'hover:text-ink'}`}>
+    <button
+      type="button"
+      onClick={onClick}
+      aria-label={label}
+      className={`grid h-8 w-8 place-items-center rounded-lg text-ink-faint transition hover:bg-canvas ${danger ? "hover:text-danger" : "hover:text-ink"}`}
+    >
       {children}
     </button>
   );
 }
 
 const PlusIcon = () => (
-  <svg className="h-[18px] w-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" /></svg>
+  <svg
+    className="h-[18px] w-[18px]"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2.2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    <line x1="12" y1="5" x2="12" y2="19" />
+    <line x1="5" y1="12" x2="19" y2="12" />
+  </svg>
 );
 const PencilIcon = () => (
-  <svg className="h-[17px] w-[17px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 20h9" /><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4z" /></svg>
+  <svg
+    className="h-[17px] w-[17px]"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    <path d="M12 20h9" />
+    <path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4z" />
+  </svg>
 );
 const TrashIcon = () => (
-  <svg className="h-[17px] w-[17px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6" /><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" /></svg>
+  <svg
+    className="h-[17px] w-[17px]"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    <polyline points="3 6 5 6 21 6" />
+    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+  </svg>
 );
