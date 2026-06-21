@@ -1,4 +1,4 @@
-import api from './axios';
+import api from "./axios";
 
 interface EmployeeRef {
   id: string;
@@ -42,19 +42,19 @@ export interface CreateOvertimeInput {
 }
 
 export const getTardiness = () =>
-  api.get<Tardiness[]>('/tardiness').then((r) => r.data);
+  api.get<Tardiness[]>("/tardiness").then((r) => r.data);
 
 export const createTardiness = (data: CreateTardinessInput) =>
-  api.post<Tardiness>('/tardiness', data).then((r) => r.data);
+  api.post<Tardiness>("/tardiness", data).then((r) => r.data);
 
 export const deleteTardiness = (id: string) =>
   api.delete(`/tardiness/${id}`).then((r) => r.data);
 
 export const getOvertime = () =>
-  api.get<Overtime[]>('/overtime').then((r) => r.data);
+  api.get<Overtime[]>("/overtime").then((r) => r.data);
 
 export const createOvertime = (data: CreateOvertimeInput) =>
-  api.post<Overtime>('/overtime', data).then((r) => r.data);
+  api.post<Overtime>("/overtime", data).then((r) => r.data);
 
 export const deleteOvertime = (id: string) =>
   api.delete(`/overtime/${id}`).then((r) => r.data);

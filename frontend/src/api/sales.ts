@@ -1,7 +1,7 @@
-import api from './axios';
+import api from "./axios";
 
-export type PaymentMethod = 'card' | 'cash' | 'transfer';
-export type SaleStatus = 'completed' | 'cancelled';
+export type PaymentMethod = "card" | "cash" | "transfer";
+export type SaleStatus = "completed" | "cancelled";
 
 export interface SaleSummary {
   id: string;
@@ -29,7 +29,11 @@ export interface SaleItem {
 
 export interface SaleDetail extends SaleSummary {
   items: SaleItem[];
-  invoice?: { id: string; number: string; status: 'paid' | 'pending' | 'cancelled' } | null;
+  invoice?: {
+    id: string;
+    number: string;
+    status: "paid" | "pending" | "cancelled";
+  } | null;
 }
 
 export interface CreateSaleItemInput {
@@ -46,14 +50,16 @@ export interface CreateSaleInput {
 }
 
 export const createSale = (data: CreateSaleInput) =>
-  api.post<SaleDetail>('/sales', data).then((r) => r.data);
+  api.post<SaleDetail>("/sales", data).then((r) => r.data);
 
 export const getSales = (params?: { from?: string; to?: string }) => {
   const qs = new URLSearchParams();
-  if (params?.from) qs.set('from', params.from);
-  if (params?.to) qs.set('to', params.to);
+  if (params?.from) qs.set("from", params.from);
+  if (params?.to) qs.set("to", params.to);
   const q = qs.toString();
-  return api.get<SaleSummary[]>(`/sales${q ? `?${q}` : ''}`).then((r) => r.data);
+  return api
+    .get<SaleSummary[]>(`/sales${q ? `?${q}` : ""}`)
+    .then((r) => r.data);
 };
 
 export const getSale = (id: string) =>

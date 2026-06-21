@@ -1,8 +1,8 @@
-import type { ButtonHTMLAttributes, ReactNode } from 'react';
-import Spinner from './Spinner';
+import type { ButtonHTMLAttributes, ReactNode } from "react";
+import Spinner from "./Spinner";
 
-type Variant = 'primary' | 'secondary' | 'danger' | 'ghost';
-type Size = 'sm' | 'md';
+type Variant = "primary" | "secondary" | "danger" | "ghost";
+type Size = "sm" | "md";
 
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: Variant;
@@ -12,24 +12,25 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 }
 
 const variants: Record<Variant, string> = {
-  primary: 'border-accent bg-accent text-white shadow-sm hover:bg-accent-deep',
+  primary: "border-accent bg-accent text-white shadow-sm hover:bg-accent-deep",
   secondary:
-    'border-border-strong bg-surface text-ink shadow-sm hover:bg-canvas',
-  danger: 'border-danger bg-danger text-white shadow-sm hover:brightness-95',
-  ghost: 'border-transparent bg-transparent text-ink-mute hover:bg-canvas hover:text-ink',
+    "border-border-strong bg-surface text-ink shadow-sm hover:bg-canvas",
+  danger: "border-danger bg-danger text-white shadow-sm hover:brightness-95",
+  ghost:
+    "border-transparent bg-transparent text-ink-mute hover:bg-canvas hover:text-ink",
 };
 
 const sizes: Record<Size, string> = {
-  sm: 'h-9 px-3 text-[13px]',
-  md: 'h-11 px-4 text-[15px]',
+  sm: "h-9 px-3 text-[13px]",
+  md: "h-11 px-4 text-[15px]",
 };
 
 export default function Button({
-  variant = 'primary',
-  size = 'md',
+  variant = "primary",
+  size = "md",
   loading = false,
   icon,
-  className = '',
+  className = "",
   children,
   disabled,
   ...rest

@@ -1,4 +1,8 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
 import { PrismaService } from '../prisma/prisma.service';
 import { Prisma } from '@prisma/client';
@@ -59,12 +63,25 @@ export class UsersService {
 
   /** Active / désactive un compte employé (un compte désactivé ne peut plus se connecter). */
   async setActive(id: string, isActive: boolean, currentUserId: string) {
-    const user = await this.prisma.user.findUnique({ where: { id }, select: { id: true, role: true } });
+    const user = await this.prisma.user.findUnique({
+      where: { id },
+      select: { id: true, role: true },
+    });
     if (!user) throw new NotFoundException('Compte introuvable');
-    if (id === currentUserId) throw new BadRequestException('Vous ne pouvez pas modifier votre propre compte');
-    if (user.role === 'owner') throw new BadRequestException('Impossible de modifier un compte propriétaire');
+    if (id === currentUserId)
+      throw new BadRequestException(
+        'Vous ne pouvez pas modifier votre propre compte',
+      );
+    if (user.role === 'owner')
+      throw new BadRequestException(
+        'Impossible de modifier un compte propriétaire',
+      );
 
-    return this.prisma.user.update({ where: { id }, data: { isActive }, select: SAFE_SELECT });
+    return this.prisma.user.update({
+      where: { id },
+      data: { isActive },
+      select: SAFE_SELECT,
+    });
   }
 
   /** Supprime un compte employé sans historique. Sinon, on impose la désactivation. */
@@ -79,8 +96,14 @@ export class UsersService {
       },
     });
     if (!user) throw new NotFoundException('Compte introuvable');
-    if (id === currentUserId) throw new BadRequestException('Vous ne pouvez pas supprimer votre propre compte');
-    if (user.role === 'owner') throw new BadRequestException('Impossible de supprimer un compte propriétaire');
+    if (id === currentUserId)
+      throw new BadRequestException(
+        'Vous ne pouvez pas supprimer votre propre compte',
+      );
+    if (user.role === 'owner')
+      throw new BadRequestException(
+        'Impossible de supprimer un compte propriétaire',
+      );
     if (user._count.sales > 0 || user._count.purchases > 0) {
       throw new BadRequestException(
         "Ce compte a un historique de ventes ou d'achats. Désactivez-le plutôt que de le supprimer.",
@@ -89,7 +112,10 @@ export class UsersService {
 
     // Une fiche employé liée est conservée : on la délie simplement du compte.
     if (user.employee) {
-      await this.prisma.employee.update({ where: { id: user.employee.id }, data: { userId: null } });
+      await this.prisma.employee.update({
+        where: { id: user.employee.id },
+        data: { userId: null },
+      });
     }
     await this.prisma.user.delete({ where: { id } });
     return { ok: true };

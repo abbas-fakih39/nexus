@@ -13,10 +13,14 @@ import { computeLeaveBalance } from '../absences/leave-balance';
 const EMPLOYEE_INCLUDE = {
   user: { select: { id: true, email: true, name: true, isActive: true } },
   _count: { select: { payments: true } },
-  absences: { select: { type: true, status: true, startDate: true, days: true } },
+  absences: {
+    select: { type: true, status: true, startDate: true, days: true },
+  },
 } satisfies Prisma.EmployeeInclude;
 
-type EmployeeWithInclude = Prisma.EmployeeGetPayload<{ include: typeof EMPLOYEE_INCLUDE }>;
+type EmployeeWithInclude = Prisma.EmployeeGetPayload<{
+  include: typeof EMPLOYEE_INCLUDE;
+}>;
 
 @Injectable()
 export class EmployeesService {
@@ -24,7 +28,10 @@ export class EmployeesService {
 
   /** Remplace les absences brutes par le solde de congés calculé. */
   private decorate({ absences, ...employee }: EmployeeWithInclude) {
-    return { ...employee, leaveBalance: computeLeaveBalance(employee.leaveQuota, absences) };
+    return {
+      ...employee,
+      leaveBalance: computeLeaveBalance(employee.leaveQuota, absences),
+    };
   }
 
   async findAll() {
@@ -57,7 +64,9 @@ export class EmployeesService {
       },
     });
     if (!employee) {
-      throw new NotFoundException("Aucune fiche employé n'est associée à votre compte");
+      throw new NotFoundException(
+        "Aucune fiche employé n'est associée à votre compte",
+      );
     }
 
     // Compteurs sur l'année en cours.
@@ -90,7 +99,9 @@ export class EmployeesService {
     });
     if (!user) throw new BadRequestException('Compte introuvable');
     if (user.role !== 'employee') {
-      throw new BadRequestException('Seul un compte employé peut être lié à une fiche');
+      throw new BadRequestException(
+        'Seul un compte employé peut être lié à une fiche',
+      );
     }
     if (user.employee && user.employee.id !== exceptEmployeeId) {
       throw new BadRequestException('Ce compte est déjà lié à une autre fiche');

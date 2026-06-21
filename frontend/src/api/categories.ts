@@ -1,4 +1,4 @@
-import api from './axios';
+import api from "./axios";
 
 export interface Category {
   id: string;
@@ -11,10 +11,10 @@ export interface CategoryInput {
 }
 
 export const getCategories = () =>
-  api.get<Category[]>('/categories').then((r) => r.data);
+  api.get<Category[]>("/categories").then((r) => r.data);
 
 export const createCategory = (data: CategoryInput) =>
-  api.post<Category>('/categories', data).then((r) => r.data);
+  api.post<Category>("/categories", data).then((r) => r.data);
 
 export const updateCategory = (id: string, data: Partial<CategoryInput>) =>
   api.patch<Category>(`/categories/${id}`, data).then((r) => r.data);

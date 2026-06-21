@@ -1,7 +1,7 @@
-import api from './axios';
+import api from "./axios";
 
-export type InvoiceType = 'sale' | 'purchase';
-export type InvoiceStatus = 'paid' | 'pending' | 'cancelled';
+export type InvoiceType = "sale" | "purchase";
+export type InvoiceStatus = "paid" | "pending" | "cancelled";
 
 export interface InvoiceSummary {
   id: string;
@@ -25,24 +25,36 @@ export interface InvoiceSummary {
   } | null;
 }
 
-export const getInvoices = (params?: { type?: InvoiceType; status?: InvoiceStatus }) => {
+export const getInvoices = (params?: {
+  type?: InvoiceType;
+  status?: InvoiceStatus;
+}) => {
   const qs = new URLSearchParams();
-  if (params?.type) qs.set('type', params.type);
-  if (params?.status) qs.set('status', params.status);
+  if (params?.type) qs.set("type", params.type);
+  if (params?.status) qs.set("status", params.status);
   const q = qs.toString();
-  return api.get<InvoiceSummary[]>(`/invoices${q ? `?${q}` : ''}`).then((r) => r.data);
+  return api
+    .get<InvoiceSummary[]>(`/invoices${q ? `?${q}` : ""}`)
+    .then((r) => r.data);
 };
 
 export const updateInvoiceStatus = (id: string, status: InvoiceStatus) =>
-  api.patch<InvoiceSummary>(`/invoices/${id}/status`, { status }).then((r) => r.data);
+  api
+    .patch<InvoiceSummary>(`/invoices/${id}/status`, { status })
+    .then((r) => r.data);
 
-export type InvoicePdfFormat = 'a4' | 'receipt' | 'payment';
+export type InvoicePdfFormat = "a4" | "receipt" | "payment";
 
 /** Récupère le PDF en blob (le token JWT passe via l'intercepteur axios) et l'ouvre dans un onglet. */
-export const openInvoicePdf = async (id: string, format: InvoicePdfFormat = 'a4') => {
-  const q = format === 'a4' ? '' : `?format=${format}`;
-  const res = await api.get(`/invoices/${id}/pdf${q}`, { responseType: 'blob' });
+export const openInvoicePdf = async (
+  id: string,
+  format: InvoicePdfFormat = "a4",
+) => {
+  const q = format === "a4" ? "" : `?format=${format}`;
+  const res = await api.get(`/invoices/${id}/pdf${q}`, {
+    responseType: "blob",
+  });
   const url = URL.createObjectURL(res.data as Blob);
-  window.open(url, '_blank');
+  window.open(url, "_blank");
   setTimeout(() => URL.revokeObjectURL(url), 60_000);
 };

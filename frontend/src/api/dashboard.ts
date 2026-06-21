@@ -1,6 +1,6 @@
-import api from './axios';
+import api from "./axios";
 
-export type Period = 'today' | '7d' | '30d' | 'year';
+export type Period = "today" | "7d" | "30d" | "year";
 
 export interface DashboardStats {
   period: string;
@@ -47,24 +47,32 @@ export interface RecentSale {
   id: string;
   clientName: string | null;
   finalAmount: string;
-  status: 'completed' | 'cancelled';
-  paymentMethod: 'card' | 'cash' | 'transfer';
+  status: "completed" | "cancelled";
+  paymentMethod: "card" | "cash" | "transfer";
   createdAt: string;
   soldBy?: { name: string };
   _count?: { items: number };
 }
 
 export const getStats = (period: Period) =>
-  api.get<DashboardStats>(`/dashboard/stats?period=${period}`).then((r) => r.data);
+  api
+    .get<DashboardStats>(`/dashboard/stats?period=${period}`)
+    .then((r) => r.data);
 
 export const getRevenueSeries = (days: number) =>
-  api.get<RevenuePoint[]>(`/dashboard/revenue-series?days=${days}`).then((r) => r.data);
+  api
+    .get<RevenuePoint[]>(`/dashboard/revenue-series?days=${days}`)
+    .then((r) => r.data);
 
 export const getTopProducts = (period: Period) =>
-  api.get<TopProduct[]>(`/dashboard/top-products?period=${period}`).then((r) => r.data);
+  api
+    .get<TopProduct[]>(`/dashboard/top-products?period=${period}`)
+    .then((r) => r.data);
 
 export const getCategoryBreakdown = (period: Period) =>
-  api.get<CategorySlice[]>(`/dashboard/category-breakdown?period=${period}`).then((r) => r.data);
+  api
+    .get<CategorySlice[]>(`/dashboard/category-breakdown?period=${period}`)
+    .then((r) => r.data);
 
 export interface DormantProduct {
   id: string;
@@ -76,17 +84,20 @@ export interface DormantProduct {
 }
 
 export const getDormantProducts = (period: Period) =>
-  api.get<DormantProduct[]>(`/dashboard/dormant-products?period=${period}`).then((r) => r.data);
+  api
+    .get<DormantProduct[]>(`/dashboard/dormant-products?period=${period}`)
+    .then((r) => r.data);
 
 export interface MyDay {
   salesToday: number;
   itemsSold: number;
 }
 
-export const getMyDay = () => api.get<MyDay>('/dashboard/my-day').then((r) => r.data);
+export const getMyDay = () =>
+  api.get<MyDay>("/dashboard/my-day").then((r) => r.data);
 
 export const getLowStock = () =>
-  api.get<LowStockProduct[]>('/dashboard/low-stock').then((r) => r.data);
+  api.get<LowStockProduct[]>("/dashboard/low-stock").then((r) => r.data);
 
 export const getRecentSales = () =>
-  api.get<RecentSale[]>('/dashboard/recent-sales').then((r) => r.data);
+  api.get<RecentSale[]>("/dashboard/recent-sales").then((r) => r.data);

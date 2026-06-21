@@ -147,7 +147,9 @@ export class PurchasesService {
       include: {
         items: {
           include: {
-            product: { select: { id: true, name: true, sku: true, unit: true } },
+            product: {
+              select: { id: true, name: true, sku: true, unit: true },
+            },
           },
         },
         supplier: { select: { id: true, name: true } },

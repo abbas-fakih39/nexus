@@ -1,19 +1,19 @@
-import api from './axios';
+import api from "./axios";
 
-export type AbsenceType = 'paid_leave' | 'unpaid_leave' | 'sick' | 'other';
-export type AbsenceStatus = 'pending' | 'approved' | 'rejected';
+export type AbsenceType = "paid_leave" | "unpaid_leave" | "sick" | "other";
+export type AbsenceStatus = "pending" | "approved" | "rejected";
 
 export const ABSENCE_TYPE_LABEL: Record<AbsenceType, string> = {
-  paid_leave: 'Congé payé',
-  unpaid_leave: 'Sans solde',
-  sick: 'Maladie',
-  other: 'Autre',
+  paid_leave: "Congé payé",
+  unpaid_leave: "Sans solde",
+  sick: "Maladie",
+  other: "Autre",
 };
 
 export const ABSENCE_STATUS_LABEL: Record<AbsenceStatus, string> = {
-  pending: 'En attente',
-  approved: 'Approuvé',
-  rejected: 'Refusé',
+  pending: "En attente",
+  approved: "Approuvé",
+  rejected: "Refusé",
 };
 
 export interface Absence {
@@ -26,7 +26,12 @@ export interface Absence {
   reason: string | null;
   decidedAt: string | null;
   createdAt: string;
-  employee: { id: string; firstName: string; lastName: string; jobTitle: string };
+  employee: {
+    id: string;
+    firstName: string;
+    lastName: string;
+    jobTitle: string;
+  };
 }
 
 export interface CreateAbsenceInput {
@@ -39,12 +44,12 @@ export interface CreateAbsenceInput {
 }
 
 export const getAbsences = () =>
-  api.get<Absence[]>('/absences').then((r) => r.data);
+  api.get<Absence[]>("/absences").then((r) => r.data);
 
 export const createAbsence = (data: CreateAbsenceInput) =>
-  api.post<Absence>('/absences', data).then((r) => r.data);
+  api.post<Absence>("/absences", data).then((r) => r.data);
 
-export const decideAbsence = (id: string, status: 'approved' | 'rejected') =>
+export const decideAbsence = (id: string, status: "approved" | "rejected") =>
   api.patch<Absence>(`/absences/${id}/status`, { status }).then((r) => r.data);
 
 export const deleteAbsence = (id: string) =>

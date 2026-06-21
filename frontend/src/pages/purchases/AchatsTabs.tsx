@@ -1,8 +1,8 @@
-import { NavLink } from 'react-router-dom';
+import { NavLink } from "react-router-dom";
 
 const tabs = [
-  { to: '/achats', label: 'Nouvel achat', end: true },
-  { to: '/achats/historique', label: 'Historique', end: false },
+  { to: "/achats", label: "Nouvel achat", end: true },
+  { to: "/achats/historique", label: "Historique", end: false },
 ];
 
 export default function AchatsTabs() {
@@ -15,7 +15,7 @@ export default function AchatsTabs() {
           end={t.end}
           className={({ isActive }) =>
             `relative px-4 py-2.5 text-sm font-semibold transition ${
-              isActive ? 'text-accent-deep' : 'text-ink-mute hover:text-ink'
+              isActive ? "text-accent-deep" : "text-ink-mute hover:text-ink"
             }`
           }
         >

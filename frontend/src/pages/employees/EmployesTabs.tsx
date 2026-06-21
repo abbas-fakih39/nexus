@@ -1,10 +1,10 @@
-import { NavLink } from 'react-router-dom';
+import { NavLink } from "react-router-dom";
 
 const tabs = [
-  { to: '/employes', label: 'Fiches', end: true },
-  { to: '/employes/absences', label: 'Absences', end: false },
-  { to: '/employes/presence', label: 'Retards & heures sup', end: false },
-  { to: '/employes/salaires', label: 'Salaires', end: false },
+  { to: "/employes", label: "Fiches", end: true },
+  { to: "/employes/absences", label: "Absences", end: false },
+  { to: "/employes/presence", label: "Retards & heures sup", end: false },
+  { to: "/employes/salaires", label: "Salaires", end: false },
 ];
 
 export default function EmployesTabs() {
@@ -17,7 +17,7 @@ export default function EmployesTabs() {
           end={t.end}
           className={({ isActive }) =>
             `relative px-4 py-2.5 text-sm font-semibold transition ${
-              isActive ? 'text-accent-deep' : 'text-ink-mute hover:text-ink'
+              isActive ? "text-accent-deep" : "text-ink-mute hover:text-ink"
             }`
           }
         >

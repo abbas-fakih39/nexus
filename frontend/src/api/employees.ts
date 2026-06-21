@@ -1,5 +1,5 @@
-import api from './axios';
-import type { AbsenceType, AbsenceStatus } from './absences';
+import api from "./axios";
+import type { AbsenceType, AbsenceStatus } from "./absences";
 
 /** Compte de connexion éventuellement rattaché à une fiche. */
 export interface LinkedAccount {
@@ -105,13 +105,13 @@ export interface MyEmployee {
 }
 
 export const getEmployees = () =>
-  api.get<Employee[]>('/employees').then((r) => r.data);
+  api.get<Employee[]>("/employees").then((r) => r.data);
 
 export const getMyEmployee = () =>
-  api.get<MyEmployee>('/employees/me').then((r) => r.data);
+  api.get<MyEmployee>("/employees/me").then((r) => r.data);
 
 export const createEmployee = (data: EmployeeInput) =>
-  api.post<Employee>('/employees', data).then((r) => r.data);
+  api.post<Employee>("/employees", data).then((r) => r.data);
 
 export const updateEmployee = (id: string, data: Partial<EmployeeInput>) =>
   api.patch<Employee>(`/employees/${id}`, data).then((r) => r.data);

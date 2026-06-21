@@ -1,6 +1,6 @@
-import api from './axios';
+import api from "./axios";
 
-export type PurchaseStatus = 'received' | 'cancelled';
+export type PurchaseStatus = "received" | "cancelled";
 
 export interface PurchaseSummary {
   id: string;
@@ -26,7 +26,11 @@ export interface PurchaseItem {
 
 export interface PurchaseDetail extends PurchaseSummary {
   items: PurchaseItem[];
-  invoice?: { id: string; number: string; status: 'paid' | 'pending' | 'cancelled' } | null;
+  invoice?: {
+    id: string;
+    number: string;
+    status: "paid" | "pending" | "cancelled";
+  } | null;
 }
 
 export interface CreatePurchaseItemInput {
@@ -42,14 +46,16 @@ export interface CreatePurchaseInput {
 }
 
 export const createPurchase = (data: CreatePurchaseInput) =>
-  api.post<PurchaseDetail>('/purchases', data).then((r) => r.data);
+  api.post<PurchaseDetail>("/purchases", data).then((r) => r.data);
 
 export const getPurchases = (params?: { from?: string; to?: string }) => {
   const qs = new URLSearchParams();
-  if (params?.from) qs.set('from', params.from);
-  if (params?.to) qs.set('to', params.to);
+  if (params?.from) qs.set("from", params.from);
+  if (params?.to) qs.set("to", params.to);
   const q = qs.toString();
-  return api.get<PurchaseSummary[]>(`/purchases${q ? `?${q}` : ''}`).then((r) => r.data);
+  return api
+    .get<PurchaseSummary[]>(`/purchases${q ? `?${q}` : ""}`)
+    .then((r) => r.data);
 };
 
 export const getPurchase = (id: string) =>

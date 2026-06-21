@@ -1,5 +1,5 @@
-import type { ReactNode } from 'react';
-import type { Role } from '../../store/authStore';
+import type { ReactNode } from "react";
+import type { Role } from "../../store/authStore";
 
 export interface NavItem {
   label: string;
@@ -8,12 +8,12 @@ export interface NavItem {
 }
 
 const svgProps = {
-  viewBox: '0 0 24 24',
-  fill: 'none',
-  stroke: 'currentColor',
+  viewBox: "0 0 24 24",
+  fill: "none",
+  stroke: "currentColor",
   strokeWidth: 2,
-  strokeLinecap: 'round' as const,
-  strokeLinejoin: 'round' as const,
+  strokeLinecap: "round" as const,
+  strokeLinejoin: "round" as const,
 };
 
 const icons = {
@@ -77,29 +77,33 @@ const icons = {
 };
 
 const OWNER_NAV: NavItem[] = [
-  { label: 'Tableau de bord', path: '/dashboard', icon: icons.dashboard },
-  { label: 'Stock', path: '/stock', icon: icons.stock },
-  { label: 'Ventes', path: '/ventes', icon: icons.ventes },
-  { label: 'Achats', path: '/achats', icon: icons.achats },
-  { label: 'Factures', path: '/factures', icon: icons.factures },
-  { label: 'Employés', path: '/employes', icon: icons.employes },
-  { label: 'Paramètres', path: '/parametres', icon: icons.parametres },
+  { label: "Tableau de bord", path: "/dashboard", icon: icons.dashboard },
+  { label: "Stock", path: "/stock", icon: icons.stock },
+  { label: "Ventes", path: "/ventes", icon: icons.ventes },
+  { label: "Achats", path: "/achats", icon: icons.achats },
+  { label: "Factures", path: "/factures", icon: icons.factures },
+  { label: "Employés", path: "/employes", icon: icons.employes },
+  { label: "Paramètres", path: "/parametres", icon: icons.parametres },
 ];
 
 const EMPLOYEE_NAV: NavItem[] = [
-  { label: 'Tableau de bord', path: '/mon-espace', icon: icons.dashboard },
-  { label: 'Ventes', path: '/ventes', icon: icons.ventes },
-  { label: 'Stock', path: '/stock', icon: icons.stock },
-  { label: 'Mon profil', path: '/mon-profil', icon: icons.profil },
+  { label: "Tableau de bord", path: "/mon-espace", icon: icons.dashboard },
+  { label: "Ventes", path: "/ventes", icon: icons.ventes },
+  { label: "Stock", path: "/stock", icon: icons.stock },
+  { label: "Mon profil", path: "/mon-profil", icon: icons.profil },
 ];
 
 export function navForRole(role: Role): NavItem[] {
-  return role === 'owner' ? OWNER_NAV : EMPLOYEE_NAV;
+  return role === "owner" ? OWNER_NAV : EMPLOYEE_NAV;
 }
 
 /** Titre de page à partir du chemin courant (pour la Topbar et les placeholders). */
 export function titleForPath(pathname: string): string {
-  const all = [...OWNER_NAV, ...EMPLOYEE_NAV].sort((a, b) => b.path.length - a.path.length);
-  const match = all.find((i) => pathname === i.path || pathname.startsWith(i.path + '/'));
-  return match?.label ?? 'Nexus';
+  const all = [...OWNER_NAV, ...EMPLOYEE_NAV].sort(
+    (a, b) => b.path.length - a.path.length,
+  );
+  const match = all.find(
+    (i) => pathname === i.path || pathname.startsWith(i.path + "/"),
+  );
+  return match?.label ?? "Nexus";
 }

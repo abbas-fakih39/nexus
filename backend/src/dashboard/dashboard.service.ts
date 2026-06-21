@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 
 const round2 = (n: number) => Math.round(n * 100) / 100;
-const num = (v: unknown) => Number(v as number);
+const num = (v: unknown) => Number(v);
 
 function startOfDay(d: Date) {
   const x = new Date(d);
@@ -30,7 +30,10 @@ export class DashboardService {
   private async salesAgg(gte: Date, lt?: Date) {
     const sales = await this.prisma.sale.findMany({
       where: { status: 'completed', createdAt: { gte, ...(lt ? { lt } : {}) } },
-      select: { finalAmount: true, items: { select: { unitCost: true, quantity: true } } },
+      select: {
+        finalAmount: true,
+        items: { select: { unitCost: true, quantity: true } },
+      },
     });
     let revenue = 0;
     let cost = 0;
@@ -38,16 +41,25 @@ export class DashboardService {
       revenue += num(s.finalAmount);
       for (const it of s.items) cost += num(it.unitCost) * it.quantity;
     }
-    return { revenue: round2(revenue), margin: round2(revenue - cost), salesCount: sales.length };
+    return {
+      revenue: round2(revenue),
+      margin: round2(revenue - cost),
+      salesCount: sales.length,
+    };
   }
 
   /** KPIs de la période + comparaison avec la période précédente de même durée. */
   async stats(period: string) {
     const now = new Date();
     const from = periodFrom(period);
-    const prevFrom = new Date(from.getTime() - (now.getTime() - from.getTime()));
+    const prevFrom = new Date(
+      from.getTime() - (now.getTime() - from.getTime()),
+    );
 
-    const [cur, prev] = await Promise.all([this.salesAgg(from), this.salesAgg(prevFrom, from)]);
+    const [cur, prev] = await Promise.all([
+      this.salesAgg(from),
+      this.salesAgg(prevFrom, from),
+    ]);
 
     const purchasesAgg = await this.prisma.purchase.aggregate({
       _sum: { totalAmount: true },
@@ -57,8 +69,13 @@ export class DashboardService {
     const products = await this.prisma.product.findMany({
       select: { costPrice: true, stock: true, alertThreshold: true },
     });
-    const stockValue = products.reduce((s, p) => s + num(p.costPrice) * p.stock, 0);
-    const lowStockCount = products.filter((p) => p.stock <= p.alertThreshold).length;
+    const stockValue = products.reduce(
+      (s, p) => s + num(p.costPrice) * p.stock,
+      0,
+    );
+    const lowStockCount = products.filter(
+      (p) => p.stock <= p.alertThreshold,
+    ).length;
 
     return {
       period,
@@ -70,7 +87,11 @@ export class DashboardService {
       purchasesTotal: round2(num(purchasesAgg._sum.totalAmount ?? 0)),
       stockValue: round2(stockValue),
       lowStockCount,
-      prev: { revenue: prev.revenue, margin: prev.margin, salesCount: prev.salesCount },
+      prev: {
+        revenue: prev.revenue,
+        margin: prev.margin,
+        salesCount: prev.salesCount,
+      },
     };
   }
 
@@ -116,7 +137,10 @@ export class DashboardService {
       }),
     ]);
 
-    const map = new Map<string, { date: string; revenue: number; purchases: number }>();
+    const map = new Map<
+      string,
+      { date: string; revenue: number; purchases: number }
+    >();
     for (let i = 0; i < days; i++) {
       const d = new Date(from);
       d.setDate(from.getDate() + i);
@@ -145,10 +169,18 @@ export class DashboardService {
         product: { select: { id: true, name: true } },
       },
     });
-    const agg = new Map<string, { name: string; qty: number; revenue: number }>();
+    const agg = new Map<
+      string,
+      { name: string; qty: number; revenue: number }
+    >();
     for (const it of items) {
-      const rev = num(it.unitPrice) * it.quantity * (1 - num(it.discount) / 100);
-      const e = agg.get(it.product.id) ?? { name: it.product.name, qty: 0, revenue: 0 };
+      const rev =
+        num(it.unitPrice) * it.quantity * (1 - num(it.discount) / 100);
+      const e = agg.get(it.product.id) ?? {
+        name: it.product.name,
+        qty: 0,
+        revenue: 0,
+      };
       e.qty += it.quantity;
       e.revenue = round2(e.revenue + rev);
       agg.set(it.product.id, e);
@@ -170,7 +202,8 @@ export class DashboardService {
     });
     const agg = new Map<string, number>();
     for (const it of items) {
-      const rev = num(it.unitPrice) * it.quantity * (1 - num(it.discount) / 100);
+      const rev =
+        num(it.unitPrice) * it.quantity * (1 - num(it.discount) / 100);
       const name = it.product.category?.name ?? 'Sans catégorie';
       agg.set(name, round2((agg.get(name) ?? 0) + rev));
     }
@@ -183,7 +216,10 @@ export class DashboardService {
   lowStock() {
     return this.prisma.product
       .findMany({
-        include: { category: { select: { name: true } }, supplier: { select: { name: true } } },
+        include: {
+          category: { select: { name: true } },
+          supplier: { select: { name: true } },
+        },
         orderBy: { stock: 'asc' },
       })
       .then((list) => list.filter((p) => p.stock <= p.alertThreshold));
@@ -193,10 +229,17 @@ export class DashboardService {
   async myDay(userId: string) {
     const from = startOfDay(new Date());
     const sales = await this.prisma.sale.findMany({
-      where: { soldById: userId, status: 'completed', createdAt: { gte: from } },
+      where: {
+        soldById: userId,
+        status: 'completed',
+        createdAt: { gte: from },
+      },
       select: { items: { select: { quantity: true } } },
     });
-    const itemsSold = sales.reduce((s, x) => s + x.items.reduce((a, i) => a + i.quantity, 0), 0);
+    const itemsSold = sales.reduce(
+      (s, x) => s + x.items.reduce((a, i) => a + i.quantity, 0),
+      0,
+    );
     return { salesToday: sales.length, itemsSold };
   }
 

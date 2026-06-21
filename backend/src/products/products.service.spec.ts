@@ -4,8 +4,15 @@ import { ProductsService } from './products.service';
 
 function makeTx() {
   return {
-    product: { create: jest.fn(), update: jest.fn(), delete: jest.fn().mockResolvedValue({ id: 'p1' }) },
-    stockMovement: { create: jest.fn().mockResolvedValue({}), deleteMany: jest.fn().mockResolvedValue({}) },
+    product: {
+      create: jest.fn(),
+      update: jest.fn(),
+      delete: jest.fn().mockResolvedValue({ id: 'p1' }),
+    },
+    stockMovement: {
+      create: jest.fn().mockResolvedValue({}),
+      deleteMany: jest.fn().mockResolvedValue({}),
+    },
   };
 }
 
@@ -51,13 +58,17 @@ describe('ProductsService', () => {
 
     it('400 si la catégorie est introuvable', async () => {
       prisma.category.findUnique.mockResolvedValue(null);
-      await expect(service.create(dto)).rejects.toBeInstanceOf(BadRequestException);
+      await expect(service.create(dto)).rejects.toBeInstanceOf(
+        BadRequestException,
+      );
     });
 
     it('400 si le SKU est déjà utilisé', async () => {
       prisma.category.findUnique.mockResolvedValue({ id: 'c1' });
       prisma.product.findUnique.mockResolvedValue({ id: 'other' });
-      await expect(service.create({ ...dto, sku: 'SKU-1' })).rejects.toThrow('SKU');
+      await expect(service.create({ ...dto, sku: 'SKU-1' })).rejects.toThrow(
+        'SKU',
+      );
     });
 
     it('crée le produit et un mouvement d’entrée pour le stock initial', async () => {
@@ -66,7 +77,13 @@ describe('ProductsService', () => {
       await service.create(dto);
       expect(tx.product.create).toHaveBeenCalled();
       expect(tx.stockMovement.create).toHaveBeenCalledWith(
-        expect.objectContaining({ data: expect.objectContaining({ type: MovementType.in, quantity: 5, reason: 'Stock initial' }) }),
+        expect.objectContaining({
+          data: expect.objectContaining({
+            type: MovementType.in,
+            quantity: 5,
+            reason: 'Stock initial',
+          }),
+        }),
       );
     });
 
@@ -81,20 +98,26 @@ describe('ProductsService', () => {
   describe('remove', () => {
     it('404 si le produit est introuvable', async () => {
       prisma.product.findUnique.mockResolvedValue(null);
-      await expect(service.remove('p1')).rejects.toBeInstanceOf(NotFoundException);
+      await expect(service.remove('p1')).rejects.toBeInstanceOf(
+        NotFoundException,
+      );
     });
 
     it('400 si le produit est utilisé dans des ventes', async () => {
       prisma.product.findUnique.mockResolvedValue({ id: 'p1' });
       prisma.saleItem.count.mockResolvedValue(2);
-      await expect(service.remove('p1')).rejects.toBeInstanceOf(BadRequestException);
+      await expect(service.remove('p1')).rejects.toBeInstanceOf(
+        BadRequestException,
+      );
       expect(tx.product.delete).not.toHaveBeenCalled();
     });
 
     it('supprime le produit et son journal de mouvements quand il est libre', async () => {
       prisma.product.findUnique.mockResolvedValue({ id: 'p1' });
       await service.remove('p1');
-      expect(tx.stockMovement.deleteMany).toHaveBeenCalledWith({ where: { productId: 'p1' } });
+      expect(tx.stockMovement.deleteMany).toHaveBeenCalledWith({
+        where: { productId: 'p1' },
+      });
       expect(tx.product.delete).toHaveBeenCalledWith({ where: { id: 'p1' } });
     });
   });

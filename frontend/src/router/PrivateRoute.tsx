@@ -1,7 +1,7 @@
-import { useEffect } from 'react';
-import { Navigate, Outlet } from 'react-router-dom';
-import { useAuthStore } from '../store/authStore';
-import { getMe } from '../api/auth';
+import { useEffect } from "react";
+import { Navigate, Outlet } from "react-router-dom";
+import { useAuthStore } from "../store/authStore";
+import { getMe } from "../api/auth";
 
 /**
  * Garde d'authentification.

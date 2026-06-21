@@ -1,5 +1,5 @@
-import { create } from 'zustand';
-import type { Settings } from '../api/settings';
+import { create } from "zustand";
+import type { Settings } from "../api/settings";
 
 interface SettingsState {
   settings: Settings | null;

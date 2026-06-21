@@ -41,11 +41,18 @@ const STATUS = {
   cancelled: { label: 'Annulée', color: C.danger },
 };
 
-const eur = new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR' });
+const eur = new Intl.NumberFormat('fr-FR', {
+  style: 'currency',
+  currency: 'EUR',
+});
 const money = (n: number) => eur.format(n);
-const num = (v: unknown) => Number(v as number);
+const num = (v: unknown) => Number(v);
 const dateFr = (d: Date) =>
-  new Intl.DateTimeFormat('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric' }).format(new Date(d));
+  new Intl.DateTimeFormat('fr-FR', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+  }).format(new Date(d));
 
 const LEFT = 50;
 const RIGHT = 545;
@@ -86,7 +93,12 @@ export function buildInvoicePdf(
     recipient = { name: invoice.sale?.clientName || 'Client comptoir' };
   } else {
     const s = invoice.purchase?.supplier;
-    issuer = { name: s?.name ?? 'Fournisseur', address: s?.address, phone: s?.phone, email: s?.email };
+    issuer = {
+      name: s?.name ?? 'Fournisseur',
+      address: s?.address,
+      phone: s?.phone,
+      email: s?.email,
+    };
     recipient = shop;
   }
 
@@ -103,16 +115,39 @@ export function buildInvoicePdf(
       issuerY = top;
     }
   }
-  doc.font('Helvetica-Bold').fontSize(17).fillColor(C.ink).text(issuer.name, LEFT, issuerY, { width: 300 });
+  doc
+    .font('Helvetica-Bold')
+    .fontSize(17)
+    .fillColor(C.ink)
+    .text(issuer.name, LEFT, issuerY, { width: 300 });
   doc.font('Helvetica').fontSize(9).fillColor(C.mute);
-  for (const line of partyLines(issuer)) doc.text(line, LEFT, doc.y + 1, { width: 300 });
+  for (const line of partyLines(issuer))
+    doc.text(line, LEFT, doc.y + 1, { width: 300 });
   const leftBottom = doc.y;
 
   const metaX = 330;
   const metaW = RIGHT - metaX;
-  doc.font('Helvetica-Bold').fontSize(24).fillColor(C.accent).text('FACTURE', metaX, top, { width: metaW, align: 'right' });
-  doc.font('Helvetica-Bold').fontSize(11).fillColor(C.ink).text(`N° ${invoice.number}`, metaX, doc.y + 5, { width: metaW, align: 'right' });
-  doc.font('Helvetica').fontSize(9).fillColor(C.mute).text(`Date d'émission : ${dateFr(invoice.createdAt)}`, metaX, doc.y + 3, { width: metaW, align: 'right' });
+  doc
+    .font('Helvetica-Bold')
+    .fontSize(24)
+    .fillColor(C.accent)
+    .text('FACTURE', metaX, top, { width: metaW, align: 'right' });
+  doc
+    .font('Helvetica-Bold')
+    .fontSize(11)
+    .fillColor(C.ink)
+    .text(`N° ${invoice.number}`, metaX, doc.y + 5, {
+      width: metaW,
+      align: 'right',
+    });
+  doc
+    .font('Helvetica')
+    .fontSize(9)
+    .fillColor(C.mute)
+    .text(`Date d'émission : ${dateFr(invoice.createdAt)}`, metaX, doc.y + 3, {
+      width: metaW,
+      align: 'right',
+    });
 
   // Pastille de statut
   const st = STATUS[invoice.status];
@@ -121,17 +156,33 @@ export function buildInvoicePdf(
   const pillX = RIGHT - pillW;
   const pillY = doc.y + 6;
   doc.roundedRect(pillX, pillY, pillW, 17, 8.5).fill(st.color);
-  doc.fillColor('#FFFFFF').text(st.label, pillX, pillY + 4.5, { width: pillW, align: 'center' });
+  doc
+    .fillColor('#FFFFFF')
+    .text(st.label, pillX, pillY + 4.5, { width: pillW, align: 'center' });
   const rightBottom = pillY + 17;
 
   // ─── Destinataire ───
   let y = Math.max(leftBottom, rightBottom) + 28;
-  doc.moveTo(LEFT, y).lineTo(RIGHT, y).lineWidth(1).strokeColor(C.border).stroke();
+  doc
+    .moveTo(LEFT, y)
+    .lineTo(RIGHT, y)
+    .lineWidth(1)
+    .strokeColor(C.border)
+    .stroke();
   y += 18;
-  doc.font('Helvetica-Bold').fontSize(8.5).fillColor(C.mute).text('FACTURÉ À', LEFT, y, { characterSpacing: 0.5 });
-  doc.font('Helvetica-Bold').fontSize(12.5).fillColor(C.ink).text(recipient.name, LEFT, doc.y + 3, { width: 280 });
+  doc
+    .font('Helvetica-Bold')
+    .fontSize(8.5)
+    .fillColor(C.mute)
+    .text('FACTURÉ À', LEFT, y, { characterSpacing: 0.5 });
+  doc
+    .font('Helvetica-Bold')
+    .fontSize(12.5)
+    .fillColor(C.ink)
+    .text(recipient.name, LEFT, doc.y + 3, { width: 280 });
   doc.font('Helvetica').fontSize(9).fillColor(C.mute);
-  for (const line of partyLines(recipient)) doc.text(line, LEFT, doc.y + 1, { width: 280 });
+  for (const line of partyLines(recipient))
+    doc.text(line, LEFT, doc.y + 1, { width: 280 });
   y = doc.y + 26;
 
   // ─── Tableau des lignes ───
@@ -153,7 +204,11 @@ export function buildInvoicePdf(
   // En-tête du tableau
   doc.rect(LEFT, y, RIGHT - LEFT, 22).fill(C.light);
   doc.font('Helvetica-Bold').fontSize(8.5).fillColor(C.mute);
-  for (const c of cols) doc.text(c.t.toUpperCase(), c.x + (c.a === 'left' ? 8 : 0), y + 7, { width: c.w - 8, align: c.a });
+  for (const c of cols)
+    doc.text(c.t.toUpperCase(), c.x + (c.a === 'left' ? 8 : 0), y + 7, {
+      width: c.w - 8,
+      align: c.a,
+    });
   y += 22;
 
   const rows = lineRows(invoice, isSale);
@@ -168,15 +223,26 @@ export function buildInvoicePdf(
       y = 50;
     }
 
-    doc.font('Helvetica-Bold').fontSize(9.5).fillColor(C.ink).text(r.name, cols[0].x + 8, y + 6, { width: cols[0].w - 16 });
-    const cells = isSale ? [r.qty, r.pu, r.remise, r.total] : [r.qty, r.pu, r.total];
+    doc
+      .font('Helvetica-Bold')
+      .fontSize(9.5)
+      .fillColor(C.ink)
+      .text(r.name, cols[0].x + 8, y + 6, { width: cols[0].w - 16 });
+    const cells = isSale
+      ? [r.qty, r.pu, r.remise, r.total]
+      : [r.qty, r.pu, r.total];
     doc.font('Helvetica').fontSize(9.5).fillColor(C.ink);
     cells.forEach((val, i) => {
       const c = cols[i + 1];
       doc.text(val, c.x, y + 6, { width: c.w - 6, align: 'right' });
     });
     y += rowH;
-    doc.moveTo(LEFT, y).lineTo(RIGHT, y).lineWidth(0.5).strokeColor(C.border).stroke();
+    doc
+      .moveTo(LEFT, y)
+      .lineTo(RIGHT, y)
+      .lineWidth(0.5)
+      .strokeColor(C.border)
+      .stroke();
   }
 
   // ─── Totaux ───
@@ -189,10 +255,22 @@ export function buildInvoicePdf(
     const final = num(invoice.sale?.finalAmount);
     const remise = num(invoice.sale?.discount);
     totalRows.push({ label: 'Sous-total HT', value: money(subtotal) });
-    if (remise > 0) totalRows.push({ label: `Remise globale (${remise} %)`, value: `- ${money(subtotal - final)}` });
-    totalRows.push({ label: 'Total à payer', value: money(final), strong: true });
+    if (remise > 0)
+      totalRows.push({
+        label: `Remise globale (${remise} %)`,
+        value: `- ${money(subtotal - final)}`,
+      });
+    totalRows.push({
+      label: 'Total à payer',
+      value: money(final),
+      strong: true,
+    });
   } else {
-    totalRows.push({ label: 'Total HT', value: money(num(invoice.purchase?.totalAmount)), strong: true });
+    totalRows.push({
+      label: 'Total HT',
+      value: money(num(invoice.purchase?.totalAmount)),
+      strong: true,
+    });
   }
 
   for (const tr of totalRows) {
@@ -205,36 +283,67 @@ export function buildInvoicePdf(
     } else {
       doc.font('Helvetica').fontSize(9.5).fillColor(C.mute);
       doc.text(tr.label, boxX + 12, y + 4, { width: boxW * 0.6 });
-      doc.fillColor(C.ink).text(tr.value, boxX, y + 4, { width: boxW - 12, align: 'right' });
+      doc
+        .fillColor(C.ink)
+        .text(tr.value, boxX, y + 4, { width: boxW - 12, align: 'right' });
       y += 18;
     }
   }
 
   // ─── Règlement / établi par / notes ───
   y += 22;
-  const handler = isSale ? invoice.sale?.soldBy?.name : invoice.purchase?.createdBy?.name;
+  const handler = isSale
+    ? invoice.sale?.soldBy?.name
+    : invoice.purchase?.createdBy?.name;
   doc.font('Helvetica').fontSize(9).fillColor(C.mute);
   if (isSale && invoice.sale) {
-    doc.text(`Mode de règlement : ${PAYMENT_LABEL[invoice.sale.paymentMethod] ?? invoice.sale.paymentMethod}`, LEFT, y);
+    doc.text(
+      `Mode de règlement : ${PAYMENT_LABEL[invoice.sale.paymentMethod] ?? invoice.sale.paymentMethod}`,
+      LEFT,
+      y,
+    );
   }
   if (handler) doc.text(`Établi par : ${handler}`, LEFT, doc.y + 2);
-  if (!isSale && invoice.purchase?.notes) doc.text(`Notes : ${invoice.purchase.notes}`, LEFT, doc.y + 2, { width: RIGHT - LEFT });
+  if (!isSale && invoice.purchase?.notes)
+    doc.text(`Notes : ${invoice.purchase.notes}`, LEFT, doc.y + 2, {
+      width: RIGHT - LEFT,
+    });
 
   // ─── Pied de page (mentions légales) ───
   const footY = doc.page.height - 86;
-  doc.moveTo(LEFT, footY).lineTo(RIGHT, footY).lineWidth(0.5).strokeColor(C.border).stroke();
+  doc
+    .moveTo(LEFT, footY)
+    .lineTo(RIGHT, footY)
+    .lineWidth(0.5)
+    .strokeColor(C.border)
+    .stroke();
   doc.font('Helvetica').fontSize(8).fillColor(C.mute);
   const legal: string[] = ['TVA non applicable, art. 293 B du CGI.'];
   if (shop.siret) legal.push(`${shop.name} — SIRET ${shop.siret}`);
-  doc.text(legal.join('   ·   '), LEFT, footY + 9, { width: RIGHT - LEFT, align: 'center', lineBreak: false });
-  doc.fillColor(C.accent).text('Merci de votre confiance.', LEFT, footY + 23, { width: RIGHT - LEFT, align: 'center', lineBreak: false });
+  doc.text(legal.join('   ·   '), LEFT, footY + 9, {
+    width: RIGHT - LEFT,
+    align: 'center',
+    lineBreak: false,
+  });
+  doc.fillColor(C.accent).text('Merci de votre confiance.', LEFT, footY + 23, {
+    width: RIGHT - LEFT,
+    align: 'center',
+    lineBreak: false,
+  });
 
   // ─── Filigrane « ANNULÉE » ───
   if (invoice.status === 'cancelled') {
     doc.save();
     doc.rotate(-30, { origin: [doc.page.width / 2, doc.page.height / 2] });
-    doc.fillColor(C.danger).fillOpacity(0.1).font('Helvetica-Bold').fontSize(120);
-    doc.text('ANNULÉE', 0, doc.page.height / 2 - 70, { width: doc.page.width, align: 'center' });
+    doc
+      .fillColor(C.danger)
+      .fillOpacity(0.1)
+      .font('Helvetica-Bold')
+      .fontSize(120);
+    doc.text('ANNULÉE', 0, doc.page.height / 2 - 70, {
+      width: doc.page.width,
+      align: 'center',
+    });
     doc.restore();
   }
 }
@@ -242,7 +351,12 @@ export function buildInvoicePdf(
 /* ---------- helpers ---------- */
 
 function partyLines(p: Party): string[] {
-  return [p.address, p.siret ? `SIRET ${p.siret}` : '', p.phone, p.email].filter(Boolean) as string[];
+  return [
+    p.address,
+    p.siret ? `SIRET ${p.siret}` : '',
+    p.phone,
+    p.email,
+  ].filter(Boolean) as string[];
 }
 
 function lineRows(invoice: InvoiceForPdf, isSale: boolean) {

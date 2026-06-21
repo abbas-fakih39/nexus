@@ -34,7 +34,10 @@ export class AbsencesController {
 
   // Pas de @Roles : l'owner saisit (→ approuvée), l'employé demande (→ en attente).
   @Post()
-  create(@Body() dto: CreateAbsenceDto, @CurrentUser() me: { id: string; role: string }) {
+  create(
+    @Body() dto: CreateAbsenceDto,
+    @CurrentUser() me: { id: string; role: string },
+  ) {
     return this.absences.create(dto, me);
   }
 
@@ -46,7 +49,10 @@ export class AbsencesController {
 
   // Owner : supprime n'importe quelle absence. Employé : annule sa demande en attente.
   @Delete(':id')
-  remove(@Param('id') id: string, @CurrentUser() me: { id: string; role: string }) {
+  remove(
+    @Param('id') id: string,
+    @CurrentUser() me: { id: string; role: string },
+  ) {
     return this.absences.remove(id, me);
   }
 }

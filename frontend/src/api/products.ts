@@ -1,6 +1,6 @@
-import api from './axios';
-import type { Category } from './categories';
-import type { Supplier } from './suppliers';
+import api from "./axios";
+import type { Category } from "./categories";
+import type { Supplier } from "./suppliers";
 
 export interface Product {
   id: string;
@@ -36,16 +36,16 @@ export interface ProductInput {
 }
 
 export const getProducts = () =>
-  api.get<Product[]>('/products').then((r) => r.data);
+  api.get<Product[]>("/products").then((r) => r.data);
 
 export const getLowStockProducts = () =>
-  api.get<Product[]>('/products/low-stock').then((r) => r.data);
+  api.get<Product[]>("/products/low-stock").then((r) => r.data);
 
 export const getProduct = (id: string) =>
   api.get<Product>(`/products/${id}`).then((r) => r.data);
 
 export const createProduct = (data: ProductInput) =>
-  api.post<Product>('/products', data).then((r) => r.data);
+  api.post<Product>("/products", data).then((r) => r.data);
 
 export const updateProduct = (id: string, data: Partial<ProductInput>) =>
   api.patch<Product>(`/products/${id}`, data).then((r) => r.data);

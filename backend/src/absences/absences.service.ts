@@ -9,7 +9,9 @@ import { PrismaService } from '../prisma/prisma.service';
 import { CreateAbsenceDto } from './dto/create-absence.dto';
 
 const ABSENCE_INCLUDE = {
-  employee: { select: { id: true, firstName: true, lastName: true, jobTitle: true } },
+  employee: {
+    select: { id: true, firstName: true, lastName: true, jobTitle: true },
+  },
 } satisfies Prisma.AbsenceInclude;
 
 /** Nombre de jours ouvrés (lun–ven) entre deux dates incluses. */
@@ -39,10 +41,16 @@ export class AbsencesService {
   findAll(filters: { employeeId?: string; status?: string; type?: string }) {
     const where: Prisma.AbsenceWhereInput = {};
     if (filters.employeeId) where.employeeId = filters.employeeId;
-    if (filters.status && (Object.values(AbsenceStatus) as string[]).includes(filters.status)) {
+    if (
+      filters.status &&
+      (Object.values(AbsenceStatus) as string[]).includes(filters.status)
+    ) {
       where.status = filters.status as AbsenceStatus;
     }
-    if (filters.type && (Object.values(AbsenceType) as string[]).includes(filters.type)) {
+    if (
+      filters.type &&
+      (Object.values(AbsenceType) as string[]).includes(filters.type)
+    ) {
       where.type = filters.type as AbsenceType;
     }
     return this.prisma.absence.findMany({
@@ -55,7 +63,10 @@ export class AbsencesService {
   async create(dto: CreateAbsenceDto, user: CurrentUser) {
     const start = new Date(dto.startDate);
     const end = new Date(dto.endDate);
-    if (end < start) throw new BadRequestException('La date de fin doit être après la date de début');
+    if (end < start)
+      throw new BadRequestException(
+        'La date de fin doit être après la date de début',
+      );
 
     // L'employé concerné et le statut dépendent du rôle.
     let employeeId: string;
@@ -63,7 +74,8 @@ export class AbsencesService {
     let decidedAt: Date | null;
 
     if (user.role === 'owner') {
-      if (!dto.employeeId) throw new BadRequestException('Sélectionnez un employé');
+      if (!dto.employeeId)
+        throw new BadRequestException('Sélectionnez un employé');
       const emp = await this.prisma.employee.findUnique({
         where: { id: dto.employeeId },
         select: { id: true },
@@ -77,14 +89,18 @@ export class AbsencesService {
         where: { userId: user.id },
         select: { id: true },
       });
-      if (!emp) throw new BadRequestException("Aucune fiche employé n'est associée à votre compte");
+      if (!emp)
+        throw new BadRequestException(
+          "Aucune fiche employé n'est associée à votre compte",
+        );
       employeeId = emp.id;
       status = AbsenceStatus.pending; // demande à valider
       decidedAt = null;
     }
 
     const days = dto.days ?? countWeekdays(start, end);
-    if (days <= 0) throw new BadRequestException('La période ne contient aucun jour ouvré');
+    if (days <= 0)
+      throw new BadRequestException('La période ne contient aucun jour ouvré');
 
     return this.prisma.absence.create({
       data: {
@@ -102,10 +118,16 @@ export class AbsencesService {
   }
 
   async decide(id: string, status: AbsenceStatus) {
-    if (status !== AbsenceStatus.approved && status !== AbsenceStatus.rejected) {
+    if (
+      status !== AbsenceStatus.approved &&
+      status !== AbsenceStatus.rejected
+    ) {
       throw new BadRequestException('Décision invalide (approved ou rejected)');
     }
-    const absence = await this.prisma.absence.findUnique({ where: { id }, select: { id: true } });
+    const absence = await this.prisma.absence.findUnique({
+      where: { id },
+      select: { id: true },
+    });
     if (!absence) throw new NotFoundException('Absence introuvable');
     return this.prisma.absence.update({
       where: { id },
@@ -117,15 +139,22 @@ export class AbsencesService {
   async remove(id: string, user: CurrentUser) {
     const absence = await this.prisma.absence.findUnique({
       where: { id },
-      select: { id: true, status: true, employee: { select: { userId: true } } },
+      select: {
+        id: true,
+        status: true,
+        employee: { select: { userId: true } },
+      },
     });
     if (!absence) throw new NotFoundException('Absence introuvable');
 
     // Un employé ne peut annuler que sa propre demande encore en attente.
     if (user.role !== 'owner') {
-      if (absence.employee.userId !== user.id) throw new ForbiddenException('Action non autorisée');
+      if (absence.employee.userId !== user.id)
+        throw new ForbiddenException('Action non autorisée');
       if (absence.status !== AbsenceStatus.pending) {
-        throw new BadRequestException('Seule une demande en attente peut être annulée');
+        throw new BadRequestException(
+          'Seule une demande en attente peut être annulée',
+        );
       }
     }
     await this.prisma.absence.delete({ where: { id } });

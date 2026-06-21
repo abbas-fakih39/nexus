@@ -24,6 +24,9 @@ export class SettingsService {
 
   async setLogo(logo: string | null) {
     const s = await this.ensure();
-    return this.prisma.settings.update({ where: { id: s.id }, data: { logoPath: logo } });
+    return this.prisma.settings.update({
+      where: { id: s.id },
+      data: { logoPath: logo },
+    });
   }
 }

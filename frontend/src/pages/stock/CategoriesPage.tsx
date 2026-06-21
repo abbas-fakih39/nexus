@@ -1,25 +1,26 @@
-import { useEffect, useMemo, useState, type FormEvent } from 'react';
-import { useAuthStore } from '../../store/authStore';
+import { useEffect, useMemo, useState, type FormEvent } from "react";
+import { useAuthStore } from "../../store/authStore";
 import {
   getCategories,
   createCategory,
   updateCategory,
   deleteCategory,
   type Category,
-} from '../../api/categories';
-import { getProducts, type Product } from '../../api/products';
-import Button from '../../components/ui/Button';
-import Input from '../../components/ui/Input';
-import Modal from '../../components/ui/Modal';
-import Spinner from '../../components/ui/Spinner';
+} from "../../api/categories";
+import { getProducts, type Product } from "../../api/products";
+import Button from "../../components/ui/Button";
+import Input from "../../components/ui/Input";
+import Modal from "../../components/ui/Modal";
+import Spinner from "../../components/ui/Spinner";
 
 function apiError(err: unknown, fallback: string): string {
-  const m = (err as { response?: { data?: { message?: string | string[] } } })?.response?.data?.message;
-  return Array.isArray(m) ? m.join(', ') : (m ?? fallback);
+  const m = (err as { response?: { data?: { message?: string | string[] } } })
+    ?.response?.data?.message;
+  return Array.isArray(m) ? m.join(", ") : (m ?? fallback);
 }
 
 export default function CategoriesPage() {
-  const canManage = useAuthStore((s) => s.user?.role === 'owner');
+  const canManage = useAuthStore((s) => s.user?.role === "owner");
 
   const [categories, setCategories] = useState<Category[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
@@ -27,7 +28,7 @@ export default function CategoriesPage() {
 
   const [formOpen, setFormOpen] = useState(false);
   const [editing, setEditing] = useState<Category | null>(null);
-  const [name, setName] = useState('');
+  const [name, setName] = useState("");
   const [saving, setSaving] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
 
@@ -53,7 +54,7 @@ export default function CategoriesPage() {
 
   function openAdd() {
     setEditing(null);
-    setName('');
+    setName("");
     setFormError(null);
     setFormOpen(true);
   }
@@ -67,7 +68,7 @@ export default function CategoriesPage() {
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
     setFormError(null);
-    if (!name.trim()) return setFormError('Le nom est obligatoire.');
+    if (!name.trim()) return setFormError("Le nom est obligatoire.");
     setSaving(true);
     try {
       if (editing) await updateCategory(editing.id, { name: name.trim() });
@@ -90,7 +91,7 @@ export default function CategoriesPage() {
       setDeleteTarget(null);
       await reload();
     } catch (err) {
-      setDeleteError(apiError(err, 'Suppression impossible.'));
+      setDeleteError(apiError(err, "Suppression impossible."));
     } finally {
       setDeleting(false);
     }
@@ -108,7 +109,9 @@ export default function CategoriesPage() {
     <div className="flex flex-col gap-5">
       {canManage && (
         <div className="flex justify-end">
-          <Button onClick={openAdd} icon={<PlusIcon />}>Ajouter une catégorie</Button>
+          <Button onClick={openAdd} icon={<PlusIcon />}>
+            Ajouter une catégorie
+          </Button>
         </div>
       )}
 
@@ -123,7 +126,10 @@ export default function CategoriesPage() {
           </thead>
           <tbody>
             {categories.map((c) => (
-              <tr key={c.id} className="border-b border-border last:border-0 hover:bg-canvas">
+              <tr
+                key={c.id}
+                className="border-b border-border last:border-0 hover:bg-canvas"
+              >
                 <td className="px-5 py-3 font-semibold text-ink">{c.name}</td>
                 <td className="px-5 py-3 text-right font-mono tabular-nums text-ink-mute">
                   {countByCategory[c.id] ?? 0}
@@ -131,8 +137,19 @@ export default function CategoriesPage() {
                 {canManage && (
                   <td className="px-5 py-3">
                     <div className="flex justify-end gap-1">
-                      <IconButton label="Modifier" onClick={() => openEdit(c)}><PencilIcon /></IconButton>
-                      <IconButton label="Supprimer" danger onClick={() => { setDeleteError(null); setDeleteTarget(c); }}><TrashIcon /></IconButton>
+                      <IconButton label="Modifier" onClick={() => openEdit(c)}>
+                        <PencilIcon />
+                      </IconButton>
+                      <IconButton
+                        label="Supprimer"
+                        danger
+                        onClick={() => {
+                          setDeleteError(null);
+                          setDeleteTarget(c);
+                        }}
+                      >
+                        <TrashIcon />
+                      </IconButton>
                     </div>
                   </td>
                 )}
@@ -141,7 +158,9 @@ export default function CategoriesPage() {
           </tbody>
         </table>
         {categories.length === 0 && (
-          <div className="px-5 py-14 text-center text-sm text-ink-mute">Aucune catégorie.</div>
+          <div className="px-5 py-14 text-center text-sm text-ink-mute">
+            Aucune catégorie.
+          </div>
         )}
       </div>
 
@@ -149,19 +168,42 @@ export default function CategoriesPage() {
       <Modal
         open={formOpen}
         onClose={() => setFormOpen(false)}
-        title={editing ? 'Modifier la catégorie' : 'Ajouter une catégorie'}
+        title={editing ? "Modifier la catégorie" : "Ajouter une catégorie"}
         footer={
           <>
-            <Button variant="secondary" onClick={() => setFormOpen(false)} disabled={saving}>Annuler</Button>
-            <Button type="submit" form="category-form" loading={saving}>{editing ? 'Enregistrer' : 'Ajouter'}</Button>
+            <Button
+              variant="secondary"
+              onClick={() => setFormOpen(false)}
+              disabled={saving}
+            >
+              Annuler
+            </Button>
+            <Button type="submit" form="category-form" loading={saving}>
+              {editing ? "Enregistrer" : "Ajouter"}
+            </Button>
           </>
         }
       >
-        <form id="category-form" onSubmit={handleSubmit} className="flex flex-col gap-4">
+        <form
+          id="category-form"
+          onSubmit={handleSubmit}
+          className="flex flex-col gap-4"
+        >
           {formError && (
-            <div role="alert" className="rounded-xl border border-danger/30 bg-danger-soft px-4 py-3 text-sm font-medium text-danger">{formError}</div>
+            <div
+              role="alert"
+              className="rounded-xl border border-danger/30 bg-danger-soft px-4 py-3 text-sm font-medium text-danger"
+            >
+              {formError}
+            </div>
           )}
-          <Input label="Nom de la catégorie *" value={name} onChange={(e) => setName(e.target.value)} placeholder="Ex. Chaussures" autoFocus />
+          <Input
+            label="Nom de la catégorie *"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            placeholder="Ex. Chaussures"
+            autoFocus
+          />
         </form>
       </Modal>
 
@@ -172,37 +214,98 @@ export default function CategoriesPage() {
         title="Supprimer la catégorie"
         footer={
           <>
-            <Button variant="secondary" onClick={() => setDeleteTarget(null)} disabled={deleting}>Annuler</Button>
-            <Button variant="danger" onClick={confirmDelete} loading={deleting}>Supprimer</Button>
+            <Button
+              variant="secondary"
+              onClick={() => setDeleteTarget(null)}
+              disabled={deleting}
+            >
+              Annuler
+            </Button>
+            <Button variant="danger" onClick={confirmDelete} loading={deleting}>
+              Supprimer
+            </Button>
           </>
         }
       >
         {deleteError && (
-          <div role="alert" className="mb-3 rounded-xl border border-danger/30 bg-danger-soft px-4 py-3 text-sm font-medium text-danger">{deleteError}</div>
+          <div
+            role="alert"
+            className="mb-3 rounded-xl border border-danger/30 bg-danger-soft px-4 py-3 text-sm font-medium text-danger"
+          >
+            {deleteError}
+          </div>
         )}
         <p className="text-sm text-ink-soft">
-          Confirmer la suppression de <span className="font-semibold text-ink">{deleteTarget?.name}</span> ?
+          Confirmer la suppression de{" "}
+          <span className="font-semibold text-ink">{deleteTarget?.name}</span> ?
         </p>
       </Modal>
     </div>
   );
 }
 
-function IconButton({ children, onClick, label, danger }: { children: React.ReactNode; onClick: () => void; label: string; danger?: boolean }) {
+function IconButton({
+  children,
+  onClick,
+  label,
+  danger,
+}: {
+  children: React.ReactNode;
+  onClick: () => void;
+  label: string;
+  danger?: boolean;
+}) {
   return (
-    <button type="button" onClick={onClick} aria-label={label}
-      className={`grid h-8 w-8 place-items-center rounded-lg text-ink-faint transition hover:bg-canvas ${danger ? 'hover:text-danger' : 'hover:text-ink'}`}>
+    <button
+      type="button"
+      onClick={onClick}
+      aria-label={label}
+      className={`grid h-8 w-8 place-items-center rounded-lg text-ink-faint transition hover:bg-canvas ${danger ? "hover:text-danger" : "hover:text-ink"}`}
+    >
       {children}
     </button>
   );
 }
 
 const PlusIcon = () => (
-  <svg className="h-[18px] w-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" /></svg>
+  <svg
+    className="h-[18px] w-[18px]"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2.2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    <line x1="12" y1="5" x2="12" y2="19" />
+    <line x1="5" y1="12" x2="19" y2="12" />
+  </svg>
 );
 const PencilIcon = () => (
-  <svg className="h-[17px] w-[17px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 20h9" /><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4z" /></svg>
+  <svg
+    className="h-[17px] w-[17px]"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    <path d="M12 20h9" />
+    <path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4z" />
+  </svg>
 );
 const TrashIcon = () => (
-  <svg className="h-[17px] w-[17px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6" /><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" /></svg>
+  <svg
+    className="h-[17px] w-[17px]"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    <polyline points="3 6 5 6 21 6" />
+    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+  </svg>
 );

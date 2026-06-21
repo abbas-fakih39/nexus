@@ -1,9 +1,9 @@
-import { useEffect, useState } from 'react';
-import { Outlet, useLocation } from 'react-router-dom';
-import Sidebar from './Sidebar';
-import Topbar from './Topbar';
-import { getSettings } from '../../api/settings';
-import { useSettingsStore } from '../../store/settingsStore';
+import { useEffect, useState } from "react";
+import { Outlet, useLocation } from "react-router-dom";
+import Sidebar from "./Sidebar";
+import Topbar from "./Topbar";
+import { getSettings } from "../../api/settings";
+import { useSettingsStore } from "../../store/settingsStore";
 
 /** Coquille de l'application connectée : sidebar (tiroir sur mobile) + topbar + contenu. */
 export default function AppLayout() {
@@ -13,7 +13,9 @@ export default function AppLayout() {
 
   // Charge le branding (nom + logo) pour la sidebar et les en-têtes.
   useEffect(() => {
-    getSettings().then(setSettings).catch(() => {});
+    getSettings()
+      .then(setSettings)
+      .catch(() => {});
   }, [setSettings]);
 
   // Ferme le tiroir mobile à chaque changement de page.
@@ -25,10 +27,10 @@ export default function AppLayout() {
   useEffect(() => {
     if (!navOpen) return;
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') setNavOpen(false);
+      if (e.key === "Escape") setNavOpen(false);
     };
-    document.addEventListener('keydown', onKey);
-    return () => document.removeEventListener('keydown', onKey);
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
   }, [navOpen]);
 
   return (

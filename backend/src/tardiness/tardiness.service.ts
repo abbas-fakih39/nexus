@@ -4,7 +4,9 @@ import { PrismaService } from '../prisma/prisma.service';
 import { CreateTardinessDto } from './dto/create-tardiness.dto';
 
 const TARDINESS_INCLUDE = {
-  employee: { select: { id: true, firstName: true, lastName: true, jobTitle: true } },
+  employee: {
+    select: { id: true, firstName: true, lastName: true, jobTitle: true },
+  },
 } satisfies Prisma.TardinessInclude;
 
 @Injectable()
@@ -39,7 +41,10 @@ export class TardinessService {
   }
 
   async remove(id: string) {
-    const tardiness = await this.prisma.tardiness.findUnique({ where: { id }, select: { id: true } });
+    const tardiness = await this.prisma.tardiness.findUnique({
+      where: { id },
+      select: { id: true },
+    });
     if (!tardiness) throw new NotFoundException('Retard introuvable');
     await this.prisma.tardiness.delete({ where: { id } });
     return { ok: true };
