@@ -25,7 +25,11 @@ describe('Ventes (e2e)', () => {
   });
 
   async function createProduct(stock: number, price = 100) {
-    const cat = await request(http).post('/categories').set(bearer()).send({ name: 'Sport' }).expect(201);
+    const cat = await request(http)
+      .post('/categories')
+      .set(bearer())
+      .send({ name: 'Sport' })
+      .expect(201);
     const prod = await request(http)
       .post('/products')
       .set(bearer())
@@ -45,7 +49,10 @@ describe('Ventes (e2e)', () => {
     const sale = await request(http)
       .post('/sales')
       .set(bearer())
-      .send({ paymentMethod: 'card', items: [{ productId: product.id, quantity: 3 }] })
+      .send({
+        paymentMethod: 'card',
+        items: [{ productId: product.id, quantity: 3 }],
+      })
       .expect(201);
 
     expect(Number(sale.body.finalAmount)).toBe(300);
@@ -53,7 +60,10 @@ describe('Ventes (e2e)', () => {
     expect(await getStock(product.id)).toBe(7);
 
     // La facture apparaît dans la liste, statut payé.
-    const invoices = await request(http).get('/invoices').set(bearer()).expect(200);
+    const invoices = await request(http)
+      .get('/invoices')
+      .set(bearer())
+      .expect(200);
     expect(invoices.body).toHaveLength(1);
     expect(invoices.body[0].status).toBe('paid');
   });
@@ -63,7 +73,10 @@ describe('Ventes (e2e)', () => {
     await request(http)
       .post('/sales')
       .set(bearer())
-      .send({ paymentMethod: 'cash', items: [{ productId: product.id, quantity: 999 }] })
+      .send({
+        paymentMethod: 'cash',
+        items: [{ productId: product.id, quantity: 999 }],
+      })
       .expect(400);
     expect(await getStock(product.id)).toBe(5);
   });
@@ -73,11 +86,17 @@ describe('Ventes (e2e)', () => {
     const sale = await request(http)
       .post('/sales')
       .set(bearer())
-      .send({ paymentMethod: 'card', items: [{ productId: product.id, quantity: 4 }] })
+      .send({
+        paymentMethod: 'card',
+        items: [{ productId: product.id, quantity: 4 }],
+      })
       .expect(201);
     expect(await getStock(product.id)).toBe(6);
 
-    await request(http).post(`/sales/${sale.body.id}/cancel`).set(bearer()).expect(201);
+    await request(http)
+      .post(`/sales/${sale.body.id}/cancel`)
+      .set(bearer())
+      .expect(201);
     expect(await getStock(product.id)).toBe(10);
   });
 
@@ -86,7 +105,10 @@ describe('Ventes (e2e)', () => {
     await request(http)
       .post('/sales')
       .set(bearer())
-      .send({ paymentMethod: 'card', items: [{ productId: product.id, quantity: 1, evil: 1 }] })
+      .send({
+        paymentMethod: 'card',
+        items: [{ productId: product.id, quantity: 1, evil: 1 }],
+      })
       .expect(400);
   });
 });
